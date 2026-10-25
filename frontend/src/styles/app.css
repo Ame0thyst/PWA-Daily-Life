@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+/* Self-hosted variable fonts for offline support */
+@font-face {
+  font-family: "Inter";
+  src: url("../assets/fonts/inter-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lora";
+  src: url("../assets/fonts/lora-var.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@theme {
+  /* Colors */
+  --color-cream: #FAF6EE;
+  --color-paper: #FFFDF8;
+  --color-sand: #F1E9DA;
+  --color-line: #E4D9C5;
+  --color-ink: #3A3631;
+  --color-ink-muted: #6B6559;
+  --color-accent: #A66A3F;
+  --color-accent-soft: #EBD8C6;
+  --color-danger: #B3473B;
+
+  /* Mood 1-5 and empty heatmap day */
+  --color-mood-1: #B8644F;
+  --color-mood-2: #D99A6C;
+  --color-mood-3: #E6D3A3;
+  --color-mood-4: #A9C08F;
+  --color-mood-5: #6E9F7A;
+  --color-heat-empty: #EDE5D4;
+
+  /* Typography */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Lora", ui-serif, Georgia, serif;
+
+  /* Shapes */
+  --radius-card: 14px;
+  --radius-field: 12px;
+  --shadow-card: 0 1px 2px rgb(58 54 49 / 0.06);
+}
+
+/* Default border color override (TW4 defaults to currentColor) */
+@layer base {
+  *, ::before, ::after { border-color: var(--color-line); }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--color-line); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-ink-muted); }
+}
+
+/* Dark theme override */
+[data-theme="dark"] {
+  --color-cream: #1F1D1A;
+  --color-paper: #272420;
+  --color-sand: #332F2A;
+  --color-line: #403B34;
+  --color-ink: #EFE9DD;
+  --color-ink-muted: #B3AA9A;
+  --color-accent: #D49A6A;
+  --color-accent-soft: #4A3626;
+  --color-danger: #E06050;
+}
+
+/* Toast animation */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+@layer components {
+  .toast {
+    animation: toast-in 200ms ease-out;
+  }
+  .toast-exit {
+    animation: toast-out 200ms ease-in forwards;
+  }
+}
+
+/* View transitions */
+@layer components {
+  .view-enter {
+    animation: fade-in 150ms ease-out;
+  }
+  .view-exit {
+    animation: fade-out 150ms ease-in forwards;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Pin pad button */
+@layer components {
+  .pin-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    font-weight: 500;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+    cursor: pointer;
+    transition: background-color 120ms, transform 80ms;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .pin-btn:active {
+    background: var(--color-sand);
+    transform: scale(0.94);
+  }
+}
+
+/* Skeleton pulse */
+@layer utilities {
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-sand) 25%, var(--color-line) 50%, var(--color-sand) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+}
+@keyframes skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
