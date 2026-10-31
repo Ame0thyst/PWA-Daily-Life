@@ -164,6 +164,8 @@ Di terminal `frontend`:
 ```bash
 npm run build
 ```
+*(Catatan Windows PowerShell: Jika muncul error `running scripts is disabled on this system`, jalankan `npm.cmd run build` atau buka PowerShell dan ketik `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`)*.
+
 Hasil kompilasi siap pakai akan berada di folder `frontend/dist/`.
 
 ### 2. Penyesuaian Nama Repositori
