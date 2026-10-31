@@ -31,3 +31,4 @@ export function isStandalone() {
     window.navigator.standalone === true
   );
 }
+
