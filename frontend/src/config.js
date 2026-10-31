@@ -1,10 +1,13 @@
 /**
  * config.js — Application configuration
- * Token is NOT stored here; it's stored in IndexedDB via settings.
+ * Default backend configuration so users don't need to manually type API URL & Token!
  */
 
-// This will be set by the user during onboarding in Settings
-export const DEFAULT_API_URL = '';
+// URL deployment Google Apps Script terpusat milik Anda
+export const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbw6f-YOUR_APP_SCRIPT_URL_HERE/exec';
+
+// API Token terpusat (Shared Secret)
+export const DEFAULT_API_TOKEN = '';
 
 // Auto-lock timeout in ms (default 60 seconds)
 export const AUTO_LOCK_TIMEOUT = 60_000;
@@ -19,7 +22,7 @@ export const THUMB_MAX_SIDE = 150;
 export const THUMB_QUALITY = 0.5;
 
 // Pagination
-export const PAGE_SIZE = 20;
+export const PAGE_SIZE = 50;
 
 // Sync
 export const MAX_RETRY_ATTEMPTS = 5;

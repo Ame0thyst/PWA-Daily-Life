@@ -3,6 +3,7 @@
  * Four stores: entries, queue, draft, settings
  */
 import localforage from 'localforage';
+import { DEFAULT_API_URL, DEFAULT_API_TOKEN } from '../config.js';
 
 // Entries cache (key: UUID)
 export const entriesStore = localforage.createInstance({
@@ -40,8 +41,8 @@ export async function setSetting(key, value) {
 }
 
 export async function getSettings() {
-  const apiUrl = await getSetting('apiUrl') || '';
-  const token = await getSetting('apiToken') || '';
+  const apiUrl = (await getSetting('apiUrl')) || DEFAULT_API_URL || '';
+  const token = (await getSetting('apiToken')) || DEFAULT_API_TOKEN || '';
   return { apiUrl, token };
 }
 

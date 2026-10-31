@@ -9,6 +9,7 @@ import { listAll as listQueue, remove as removeQueueItem } from '../data/queue.j
 import { showToast } from '../components/toast.js';
 import { getDeferredInstallPrompt, clearDeferredInstallPrompt, isStandalone } from '../pwa.js';
 import { getStoredUserKey, setStoredUserKey, validateSecretKey } from '../data/key.js';
+import { restoreUserEntries } from '../data/restore.js';
 
 export async function renderSettingsView(container) {
   const apiUrl = (await getSetting('apiUrl')) || '';
@@ -317,15 +318,19 @@ function setupUserKeyHandlers(container) {
   });
 
   changeBtn.addEventListener('click', async () => {
-    const input = window.prompt('Masukkan Kunci Diary baru Anda (format: DJ-XXXX-XXXX-XXXX-XXXX):');
+    const input = window.prompt('Masukkan Kunci Diary lama Anda (format: DJ-XXXX-XXXX-XXXX-XXXX):');
     if (!input) return;
     if (!validateSecretKey(input)) {
       showToast('Format kunci tidak valid', 'error');
       return;
     }
     await setStoredUserKey(input);
-    showToast('Kunci berhasil diperbarui. Memulai sinkronisasi...', 'success');
+    showToast('Kunci diperbarui. Memulihkan riwayat catatan...', 'info');
     renderSettingsView(container);
+    const restoreResult = await restoreUserEntries();
+    if (restoreResult.ok) {
+      showToast(`Berhasil memulihkan ${restoreResult.count} catatan!`, 'success');
+    }
     flushQueue();
   });
 }

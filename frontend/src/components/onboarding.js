@@ -4,6 +4,7 @@
 import { generateSecretKey, setStoredUserKey, validateSecretKey } from '../data/key.js';
 import { showToast } from './toast.js';
 import { flushQueue } from '../data/sync.js';
+import { restoreUserEntries } from '../data/restore.js';
 
 export function renderOnboardingModal(onComplete) {
   let modalContainer = document.getElementById('onboarding-modal');
@@ -191,9 +192,26 @@ export function renderOnboardingModal(onComplete) {
       return;
     }
     keyError.classList.add('hidden');
+    btnConfirmExisting.disabled = true;
+    btnConfirmExisting.textContent = 'Memulihkan Data...';
+
     const cleanKey = await setStoredUserKey(raw);
+    showToast('Kunci diary terpasang. Mengunduh riwayat catatan...', 'info');
+
+    // Tarik seluruh riwayat catatan dari Google Sheets untuk kunci ini
+    const restoreResult = await restoreUserEntries();
     modalContainer.remove();
-    showToast('Kunci diary terpasang. Memulihkan catatan...', 'success');
+
+    if (restoreResult.ok) {
+      if (restoreResult.count > 0) {
+        showToast(`Berhasil memulihkan ${restoreResult.count} catatan!`, 'success');
+      } else {
+        showToast('Kunci terpasang. Belum ada catatan tersimpan di cloud.', 'info');
+      }
+    } else {
+      showToast('Kunci disimpan. Akan disinkronkan saat terhubung.', 'info');
+    }
+
     if (onComplete) onComplete(cleanKey);
     flushQueue();
   });
