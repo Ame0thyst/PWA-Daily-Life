@@ -78,3 +78,4 @@ export async function generateInviteLink() {
   const origin = window.location.origin + window.location.pathname;
   return `${origin}?connect=${encoded}`;
 }
+
