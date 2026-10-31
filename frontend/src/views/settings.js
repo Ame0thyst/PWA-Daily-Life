@@ -7,7 +7,7 @@ import { isWebAuthnSupported, isWebAuthnEnabled, registerWebAuthn, disableWebAut
 import { flushQueue } from '../data/sync.js';
 import { listAll as listQueue, remove as removeQueueItem } from '../data/queue.js';
 import { showToast } from '../components/toast.js';
-import { getDeferredInstallPrompt, clearDeferredInstallPrompt } from '../main.js';
+import { getDeferredInstallPrompt, clearDeferredInstallPrompt, isStandalone } from '../pwa.js';
 
 export async function renderSettingsView(container) {
   const apiUrl = (await getSetting('apiUrl')) || '';
@@ -18,7 +18,7 @@ export async function renderSettingsView(container) {
   const bioEnabled = await isWebAuthnEnabled();
   const autoLockSetting = (await getSetting('autoLockTimeout')) ?? 60000;
   const currentTheme = (await getSetting('theme')) || 'cream';
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const standaloneActive = isStandalone();
 
   const queueItems = await listQueue();
   const failedItems = queueItems.filter((q) => q.status === 'failed');
@@ -30,7 +30,7 @@ export async function renderSettingsView(container) {
       </div>
 
       <!-- 0. Status Instalasi PWA -->
-      ${isStandalone ? `
+      ${standaloneActive ? `
         <section class="rounded-card border border-emerald-300 bg-emerald-50/60 dark:bg-emerald-950/20 dark:border-emerald-800 p-4 shadow-card flex items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">
             <span class="inline-flex size-6 items-center justify-center rounded-full bg-emerald-600 text-cream text-xs font-bold">✓</span>

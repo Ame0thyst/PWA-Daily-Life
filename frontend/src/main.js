@@ -6,6 +6,7 @@ import { getSetting } from './data/db.js';
 import { checkAndShowLock, initAutoLock, isLocked } from './lock/autolock.js';
 import { initSyncPill } from './components/syncPill.js';
 import { flushQueue } from './data/sync.js';
+import './pwa.js';
 
 // Views
 import { renderWriteView } from './views/write.js';
@@ -23,28 +24,6 @@ const TITLES = {
   analytics: 'Analitik Jurnal',
   settings: 'Pengaturan',
 };
-
-// PWA Install Prompt State
-let deferredInstallPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  window.dispatchEvent(new CustomEvent('pwa-install-ready'));
-});
-
-window.addEventListener('appinstalled', () => {
-  deferredInstallPrompt = null;
-  window.dispatchEvent(new CustomEvent('pwa-installed'));
-});
-
-export function getDeferredInstallPrompt() {
-  return deferredInstallPrompt;
-}
-
-export function clearDeferredInstallPrompt() {
-  deferredInstallPrompt = null;
-}
 
 async function initTheme() {
   const theme = await getSetting('theme');
