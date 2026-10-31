@@ -137,6 +137,10 @@ export async function renderSettingsView(container) {
             class="rounded-field border bg-paper px-4 py-2 text-xs font-medium text-ink hover:bg-sand cursor-pointer">
             Sinkronkan Sekarang
           </button>
+          <button type="button" id="btn-auto-setup-sheet"
+            class="rounded-field border border-accent/40 bg-accent-soft/30 px-3 py-2 text-xs font-medium text-accent hover:bg-accent-soft cursor-pointer">
+            ⚡ Setup Sheet Otomatis
+          </button>
         </div>
 
         <!-- Status Antrean -->
@@ -352,6 +356,7 @@ function setupInstallHandlers(container) {
 function setupApiHandlers(container) {
   const saveBtn = container.querySelector('#btn-save-api');
   const syncBtn = container.querySelector('#btn-sync-now');
+  const autoSetupBtn = container.querySelector('#btn-auto-setup-sheet');
   const urlInput = container.querySelector('#setting-api-url');
   const tokenInput = container.querySelector('#setting-api-token');
 
@@ -365,6 +370,33 @@ function setupApiHandlers(container) {
     showToast('Memulai sinkronisasi...', 'info');
     flushQueue();
   });
+
+  if (autoSetupBtn) {
+    autoSetupBtn.addEventListener('click', async () => {
+      const url = urlInput.value.trim();
+      const token = tokenInput.value.trim();
+      if (!url || !token) {
+        showToast('Isi Web App URL & API Token terlebih dahulu', 'error');
+        return;
+      }
+      showToast('Menjalankan setup sheet otomatis...', 'info');
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ token, op: 'setup' }),
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+          showToast('Google Sheets berhasil disetup otomatis! 10 kolom aktif.', 'success');
+        } else {
+          showToast('Gagal: ' + (data?.error || 'Periksa URL / Token'), 'error');
+        }
+      } catch (err) {
+        showToast('Eror koneksi: ' + err.message, 'error');
+      }
+    });
+  }
 
   container.querySelectorAll('.btn-delete-queue-item').forEach((btn) => {
     btn.addEventListener('click', async () => {

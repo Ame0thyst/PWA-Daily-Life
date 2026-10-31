@@ -1,5 +1,5 @@
 const P = PropertiesService.getScriptProperties();
-// 10 Kolom: Kolom B adalah User_Key untuk memisahkan data antar pengguna
+// 10 Kolom Standar: Kolom B adalah User_Key untuk isolasi multi-user
 const COLS = ['ID','User_Key','Timestamp','Mood','Tags','Deleted','Updated_At',
               'Drive_File_ID','Teks','Thumbnail_Base64'];
 const MAX_IMG_B64 = 3000000; // sekitar 2,2 MB biner
@@ -9,8 +9,74 @@ function json_(o) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+/**
+ * Mendapatkan sheet 'entries'. Jika belum ada atau kolomnya belum pas,
+ * fungsi ini otomatis membuat sheet dan mengatur header serta formatnya!
+ */
 function sheet_() {
-  return SpreadsheetApp.openById(P.getProperty('SHEET_ID')).getSheetByName('entries');
+  const ss = SpreadsheetApp.openById(P.getProperty('SHEET_ID'));
+  let sh = ss.getSheetByName('entries');
+  
+  // 1. Buat otomatis sheet 'entries' jika belum ada
+  if (!sh) {
+    sh = ss.insertSheet('entries');
+  }
+
+  // 2. Cek baris header (Baris 1)
+  if (sh.getLastRow() < 1) {
+    // Sheet kosong: pasang header 10 kolom otomatis
+    sh.getRange(1, 1, 1, COLS.length).setValues([COLS]);
+    formatHeaderAndColumns_(sh);
+  } else {
+    // Cek apakah kolom B sudah User_Key atau masih versi lama 9 kolom
+    const firstRow = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 10)).getValues()[0];
+    if (firstRow[1] !== 'User_Key') {
+      // Migrasi otomatis: sisipkan kolom User_Key di Kolom B
+      sh.insertColumnAfter(1); // Kolom 2 baru
+      sh.getRange(1, 2).setValue('User_Key');
+      // Isi default 'DEFAULT_USER' untuk baris lama agar tidak hilang
+      const lastRow = sh.getLastRow();
+      if (lastRow > 1) {
+        sh.getRange(2, 2, lastRow - 1, 1).setValue('DEFAULT_USER');
+      }
+      formatHeaderAndColumns_(sh);
+    }
+  }
+
+  return sh;
+}
+
+/**
+ * Format tampilan header, warna, freeze row, dan Plain Text otomatis
+ */
+function formatHeaderAndColumns_(sh) {
+  try {
+    const headerRange = sh.getRange(1, 1, 1, COLS.length);
+    headerRange.setFontWeight('bold');
+    headerRange.setBackground('#F4EFE6'); // Warna cream elegan
+    headerRange.setFontColor('#2B2620');
+    sh.setFrozenRows(1);
+
+    // Set Plain Text otomatis untuk ID (A), User_Key (B), Timestamp (C), Updated_At (G)
+    // agar Google Sheets tidak merusak format teks & tanggal ISO
+    sh.getRange('A:C').setNumberFormat('@');
+    sh.getRange('G:G').setNumberFormat('@');
+  } catch (_) {}
+}
+
+/**
+ * FUNGSI SETUP OTOMATIS:
+ * Jalankan fungsi setupAuto() ini sekali dari editor Apps Script jika Anda ingin
+ * membuat/memformat seluruh sheet & properties tanpa repot!
+ */
+function setupAuto() {
+  const sh = sheet_();
+  return {
+    ok: true,
+    message: 'Setup otomatis selesai! Sheet "entries" telah dikonfigurasi dengan 10 kolom.',
+    sheetName: sh.getName(),
+    columns: COLS
+  };
 }
 
 function authOk_(t) {
@@ -18,7 +84,13 @@ function authOk_(t) {
   return !!real && !!t && t === real;
 }
 
-function doGet() { 
+function doGet(e) { 
+  // Jika parameter ?setup=1 disertakan dengan token yang benar, jalankan setup otomatis
+  if (e && e.parameter && e.parameter.setup === '1') {
+    if (authOk_(e.parameter.token)) {
+      return json_(setupAuto());
+    }
+  }
   return json_({ ok: true, service: 'daily-journal', multiUser: true }); 
 } // health check
 
@@ -28,7 +100,12 @@ function doPost(e) {
     const req = JSON.parse(e.postData.contents);
     if (!authOk_(req.token)) return json_({ ok: false, error: 'unauthorized' });
 
-    // Validasi User_Key wajib disertakan untuk semua operasi
+    // Panggilan op khusus setup otomatis via API
+    if (req.op === 'setup') {
+      return json_(setupAuto());
+    }
+
+    // Validasi User_Key wajib disertakan untuk semua operasi jurnal
     const userKey = (req.userKey || '').trim().toUpperCase();
     if (!userKey) {
       return json_({ ok: false, error: 'missing_user_key' });

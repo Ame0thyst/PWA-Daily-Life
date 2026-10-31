@@ -69,3 +69,4 @@ export async function hasUserKey() {
   const key = await getStoredUserKey();
   return !!key;
 }
+
