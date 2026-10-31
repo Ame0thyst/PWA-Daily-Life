@@ -8,6 +8,7 @@ import { initSyncPill } from './components/syncPill.js';
 import { flushQueue } from './data/sync.js';
 import { hasUserKey } from './data/key.js';
 import { renderOnboardingModal } from './components/onboarding.js';
+import { checkAndProcessInviteLink } from './components/invite.js';
 import './pwa.js';
 
 // Views
@@ -161,6 +162,9 @@ async function initApp() {
   await initTheme();
   initSyncPill();
   registerServiceWorker();
+
+  // Process invite/connect link if opened with invite parameters
+  await checkAndProcessInviteLink();
 
   // Check if first-run user key exists
   const keyExists = await hasUserKey();

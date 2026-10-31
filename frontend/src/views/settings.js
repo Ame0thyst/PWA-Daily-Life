@@ -10,6 +10,7 @@ import { showToast } from '../components/toast.js';
 import { getDeferredInstallPrompt, clearDeferredInstallPrompt, isStandalone } from '../pwa.js';
 import { getStoredUserKey, setStoredUserKey, validateSecretKey } from '../data/key.js';
 import { restoreUserEntries } from '../data/restore.js';
+import { generateInviteLink } from '../components/invite.js';
 
 export async function renderSettingsView(container) {
   const apiUrl = (await getSetting('apiUrl')) || '';
@@ -129,7 +130,7 @@ export async function renderSettingsView(container) {
           <span class="text-[11px] text-ink-muted">Token hanya disimpan lokal di IndexedDB perangkat ini.</span>
         </div>
 
-        <div class="flex items-center gap-2 pt-2">
+        <div class="flex flex-wrap items-center gap-2 pt-2">
           <button type="button" id="btn-save-api"
             class="rounded-field bg-accent px-4 py-2 text-xs font-semibold text-cream hover:opacity-90 cursor-pointer">
             Simpan Konfigurasi
@@ -141,6 +142,10 @@ export async function renderSettingsView(container) {
           <button type="button" id="btn-auto-setup-sheet"
             class="rounded-field border border-accent/40 bg-accent-soft/30 px-3 py-2 text-xs font-medium text-accent hover:bg-accent-soft cursor-pointer">
             ⚡ Setup Sheet Otomatis
+          </button>
+          <button type="button" id="btn-share-invite-link"
+            class="rounded-field border bg-paper px-3 py-2 text-xs font-medium text-ink hover:bg-sand cursor-pointer">
+            🔗 Salin Link Undangan Teman
           </button>
         </div>
 
@@ -362,8 +367,25 @@ function setupApiHandlers(container) {
   const saveBtn = container.querySelector('#btn-save-api');
   const syncBtn = container.querySelector('#btn-sync-now');
   const autoSetupBtn = container.querySelector('#btn-auto-setup-sheet');
+  const shareInviteBtn = container.querySelector('#btn-share-invite-link');
   const urlInput = container.querySelector('#setting-api-url');
   const tokenInput = container.querySelector('#setting-api-token');
+
+  if (shareInviteBtn) {
+    shareInviteBtn.addEventListener('click', async () => {
+      const link = await generateInviteLink();
+      if (!link) {
+        showToast('Isi dan simpan Web App URL terlebih dahulu', 'error');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(link);
+        showToast('Link undangan berhasil disalin! Bagikan ke teman.', 'success');
+      } catch {
+        window.prompt('Salin link undangan ini untuk teman:', link);
+      }
+    });
+  }
 
   saveBtn.addEventListener('click', async () => {
     await setSetting('apiUrl', urlInput.value.trim());

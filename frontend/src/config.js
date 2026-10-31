@@ -4,10 +4,10 @@
  */
 
 // URL deployment Google Apps Script terpusat milik Anda
-export const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbw6f-YOUR_APP_SCRIPT_URL_HERE/exec';
+export const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbxF-yEnnArO6ptTMg7jxg9HPCWeh2jcw_HtPO7bwhKOUQbHdodRoesfPNlzELGyX2OM/exec';
 
 // API Token terpusat (Shared Secret)
-export const DEFAULT_API_TOKEN = '';
+export const DEFAULT_API_TOKEN = 'JournalGilangErika!2026#020226';
 
 // Auto-lock timeout in ms (default 60 seconds)
 export const AUTO_LOCK_TIMEOUT = 60_000;
