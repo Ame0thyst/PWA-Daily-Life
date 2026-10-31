@@ -1,8 +1,9 @@
 /**
  * api.js — Simple request via POST text/plain;charset=utf-8
- * Token sent in body to avoid preflight and query string logging.
+ * Token and User_Key sent in body for multi-user isolation.
  */
 import { getSettings } from './db.js';
+import { getStoredUserKey } from './key.js';
 
 export async function callApi(op, payload = {}) {
   const { apiUrl, token } = await getSettings();
@@ -10,10 +11,12 @@ export async function callApi(op, payload = {}) {
     throw new Error('API_URL_NOT_CONFIGURED');
   }
 
+  const userKey = await getStoredUserKey();
+
   const res = await fetch(apiUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ token, op, ...payload }),
+    body: JSON.stringify({ token, userKey, op, ...payload }),
   });
 
   if (!res.ok) {
@@ -39,8 +42,8 @@ export async function apiDeleteEntry(id) {
   return callApi('delete', { id });
 }
 
-export async function apiListEntries(limit = 20, cursor = null) {
-  return callApi('list', { limit, cursor });
+export async function apiListEntries(limit = 30) {
+  return callApi('list', { limit });
 }
 
 export async function apiGetStats() {

@@ -8,10 +8,12 @@ import { flushQueue } from '../data/sync.js';
 import { listAll as listQueue, remove as removeQueueItem } from '../data/queue.js';
 import { showToast } from '../components/toast.js';
 import { getDeferredInstallPrompt, clearDeferredInstallPrompt, isStandalone } from '../pwa.js';
+import { getStoredUserKey, setStoredUserKey, validateSecretKey } from '../data/key.js';
 
 export async function renderSettingsView(container) {
   const apiUrl = (await getSetting('apiUrl')) || '';
   const apiToken = (await getSetting('apiToken')) || '';
+  const userKey = (await getStoredUserKey()) || '';
   const pinExists = await isPinSet();
   const pinLength = await getPinLength();
   const bioSupported = await isWebAuthnSupported();
@@ -68,7 +70,40 @@ export async function renderSettingsView(container) {
         </section>
       `}
 
-      <!-- 1. Sinkronisasi & API GAS -->
+      <!-- 1. Kunci Diary Kriptografi (User Identity) -->
+      <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
+        <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
+          <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          </svg>
+          Kunci Pemulihan Diary (Secret Key)
+        </h3>
+        <p class="text-xs text-ink-muted">
+          Kunci unik ini melindungi catatan Anda agar tidak tertukar dengan orang lain di database. Simpan kunci ini jika Anda ingin berganti HP.
+        </p>
+
+        <div class="flex items-center gap-2 rounded-field border bg-cream/40 p-2.5">
+          <input type="password" id="display-user-key" value="${escapeHtml(userKey)}" readonly
+            class="flex-1 bg-transparent font-mono text-xs font-bold tracking-wider text-ink focus:outline-hidden" />
+          <button type="button" id="btn-toggle-view-key"
+            class="text-xs text-ink-muted hover:text-ink cursor-pointer px-1">
+            👁️ Lihat
+          </button>
+          <button type="button" id="btn-copy-user-key"
+            class="rounded-field border bg-paper px-2.5 py-1 text-xs font-medium text-ink hover:bg-sand cursor-pointer">
+            📋 Salin
+          </button>
+        </div>
+
+        <div>
+          <button type="button" id="btn-change-user-key"
+            class="text-xs text-accent hover:underline cursor-pointer">
+            Ganti / Pulihkan Kunci Lain...
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. Sinkronisasi & API GAS -->
       <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -126,14 +161,15 @@ export async function renderSettingsView(container) {
         </div>
       </section>
 
-      <!-- 2. Keamanan & PIN -->
+      <!-- 3. Keamanan & PIN -->
       <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-          Keamanan & Kunci Lokal
+          Keamanan Kunci Harian (PIN & Biometrik)
         </h3>
+        <p class="text-xs text-ink-muted">Kunci praktis harian agar orang lain tidak bisa membuka jurnal langsung dari HP Anda.</p>
 
         <!-- Status PIN -->
         <div class="flex items-center justify-between border-b pb-3">
@@ -179,7 +215,7 @@ export async function renderSettingsView(container) {
         </div>
       </section>
 
-      <!-- 3. Ekspor & Cadangan Data -->
+      <!-- 4. Ekspor & Cadangan Data -->
       <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -200,7 +236,7 @@ export async function renderSettingsView(container) {
         </div>
       </section>
 
-      <!-- 4. Tampilan -->
+      <!-- 5. Tampilan -->
       <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -220,7 +256,7 @@ export async function renderSettingsView(container) {
         </div>
       </section>
 
-      <!-- 5. Reset & Cache -->
+      <!-- 6. Reset & Cache -->
       <section class="rounded-card border border-danger/20 bg-paper p-4 shadow-card flex flex-col gap-2">
         <h3 class="font-serif text-sm font-semibold text-danger">Reset Penyimpanan Lokal</h3>
         <p class="text-xs text-ink-muted">Bersihkan cache lokal di IndexedDB browser ini. Data yang sudah tersinkron ke Google Sheets tetap aman.</p>
@@ -232,20 +268,62 @@ export async function renderSettingsView(container) {
         </div>
       </section>
 
-      <!-- 6. Tentang -->
+      <!-- 7. Tentang -->
       <footer class="text-center text-xs text-ink-muted pt-2">
-        <p class="font-semibold text-ink">Daily Journal PWA v2.2</p>
-        <p class="mt-0.5">Offline-first &bull; Tailwind CSS 4 &bull; GAS Serverless &bull; Auto-Update PWA</p>
+        <p class="font-semibold text-ink">Daily Journal PWA v2.3</p>
+        <p class="mt-0.5">Offline-first &bull; Multi-User Cryptographic Isolation &bull; Auto-Update PWA</p>
       </footer>
     </div>
   `;
 
   // Attach Handlers
   setupInstallHandlers(container);
+  setupUserKeyHandlers(container);
   setupApiHandlers(container);
   setupSecurityHandlers(container);
   setupExportHandlers(container);
   setupThemeHandlers(container);
+}
+
+function setupUserKeyHandlers(container) {
+  const keyInput = container.querySelector('#display-user-key');
+  const toggleBtn = container.querySelector('#btn-toggle-view-key');
+  const copyBtn = container.querySelector('#btn-copy-user-key');
+  const changeBtn = container.querySelector('#btn-change-user-key');
+
+  toggleBtn.addEventListener('click', () => {
+    if (keyInput.type === 'password') {
+      keyInput.type = 'text';
+      toggleBtn.textContent = '🙈 Tutup';
+    } else {
+      keyInput.type = 'password';
+      toggleBtn.textContent = '👁️ Lihat';
+    }
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(keyInput.value);
+      showToast('Kunci berhasil disalin!', 'success');
+      copyBtn.textContent = '✓ Tersalin';
+      setTimeout(() => { copyBtn.textContent = '📋 Salin'; }, 2000);
+    } catch {
+      showToast('Gagal menyalin', 'error');
+    }
+  });
+
+  changeBtn.addEventListener('click', async () => {
+    const input = window.prompt('Masukkan Kunci Diary baru Anda (format: DJ-XXXX-XXXX-XXXX-XXXX):');
+    if (!input) return;
+    if (!validateSecretKey(input)) {
+      showToast('Format kunci tidak valid', 'error');
+      return;
+    }
+    await setStoredUserKey(input);
+    showToast('Kunci berhasil diperbarui. Memulai sinkronisasi...', 'success');
+    renderSettingsView(container);
+    flushQueue();
+  });
 }
 
 function setupInstallHandlers(container) {

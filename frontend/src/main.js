@@ -6,6 +6,8 @@ import { getSetting } from './data/db.js';
 import { checkAndShowLock, initAutoLock, isLocked } from './lock/autolock.js';
 import { initSyncPill } from './components/syncPill.js';
 import { flushQueue } from './data/sync.js';
+import { hasUserKey } from './data/key.js';
+import { renderOnboardingModal } from './components/onboarding.js';
 import './pwa.js';
 
 // Views
@@ -160,11 +162,21 @@ async function initApp() {
   initSyncPill();
   registerServiceWorker();
 
+  // Check if first-run user key exists
+  const keyExists = await hasUserKey();
+  if (!keyExists) {
+    renderOnboardingModal(() => {
+      handleRouting();
+    });
+  }
+
   window.addEventListener('hashchange', handleRouting);
   await handleRouting();
 
-  // Trigger sync on boot
-  flushQueue();
+  // Trigger sync on boot if user key is configured
+  if (keyExists) {
+    flushQueue();
+  }
 }
 
 // Security Check: Lock screen always precedes any data rendering

@@ -53,17 +53,18 @@ Agar catatan harian tersinkron ke cloud pribadi Anda, siapkan database Google gr
 1. Buka [Google Sheets](https://sheets.new) di browser Anda.
 2. Beri nama spreadsheet, misalnya: **`Daily_Journal_Database`**.
 3. Di tab bawah lembar kerja, ubah nama sheet dari `Sheet1` menjadi **`entries`** *(wajib huruf kecil sesuai script)*.
-4. Isi judul kolom pada **Baris 1** secara berurutan:
+4. Isi judul kolom pada **Baris 1** secara berurutan (10 Kolom):
    - Kolom A: `ID`
-   - Kolom B: `Timestamp`
-   - Kolom C: `Mood`
-   - Kolom D: `Tags`
-   - Kolom E: `Deleted`
-   - Kolom F: `Updated_At`
-   - Kolom G: `Drive_File_ID`
-   - Kolom H: `Teks`
-   - Kolom I: `Thumbnail_Base64`
-5. **PENTING**: Blok seluruh **Kolom B (`Timestamp`)**, lalu klik menu **Format** → **Number (Angka)** → pilih **Plain text (Teks biasa)**. Ini mencegah Google Sheets mengubah format tanggal ISO menjadi objek Date.
+   - Kolom B: `User_Key`
+   - Kolom C: `Timestamp`
+   - Kolom D: `Mood`
+   - Kolom E: `Tags`
+   - Kolom F: `Deleted`
+   - Kolom G: `Updated_At`
+   - Kolom H: `Drive_File_ID`
+   - Kolom I: `Teks`
+   - Kolom J: `Thumbnail_Base64`
+5. **PENTING**: Blok **Kolom B (`User_Key`)** dan **Kolom C (`Timestamp`)**, lalu klik menu **Format** → **Number (Angka)** → pilih **Plain text (Teks biasa)**. Ini mencegah Google Sheets mengubah format teks.
 6. Salin **Spreadsheet ID** dari URL browser Anda:
    - URL: `https://docs.google.com/spreadsheets/d/`**`1a2B3c4D5e6F7g8H9...`**`/edit`
    - Simpan ID yang diapit tanda `/d/` dan `/edit`.
