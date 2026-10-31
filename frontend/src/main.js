@@ -24,6 +24,28 @@ const TITLES = {
   settings: 'Pengaturan',
 };
 
+// PWA Install Prompt State
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  window.dispatchEvent(new CustomEvent('pwa-install-ready'));
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  window.dispatchEvent(new CustomEvent('pwa-installed'));
+});
+
+export function getDeferredInstallPrompt() {
+  return deferredInstallPrompt;
+}
+
+export function clearDeferredInstallPrompt() {
+  deferredInstallPrompt = null;
+}
+
 async function initTheme() {
   const theme = await getSetting('theme');
   if (theme === 'dark') {
@@ -97,10 +119,44 @@ function registerServiceWorker() {
         .register('./sw.js')
         .then((reg) => {
           console.debug('Service Worker registered:', reg.scope);
+
+          // Listen for incoming new worker
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // Prompt worker to activate immediately
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
+
+          // Check for service worker updates whenever app is reopened or focused
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+              reg.update().catch(() => {});
+            }
+          });
+
+          // Periodic background check every 30 minutes
+          setInterval(() => {
+            reg.update().catch(() => {});
+          }, 30 * 60 * 1000);
         })
         .catch((err) => {
           console.debug('Service Worker registration failed:', err);
         });
+
+      // Reload smoothly when new Service Worker takes control
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
 
       // Listen for message from service worker
       navigator.serviceWorker.addEventListener('message', (event) => {

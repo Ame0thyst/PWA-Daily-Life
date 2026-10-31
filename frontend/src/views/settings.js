@@ -7,6 +7,7 @@ import { isWebAuthnSupported, isWebAuthnEnabled, registerWebAuthn, disableWebAut
 import { flushQueue } from '../data/sync.js';
 import { listAll as listQueue, remove as removeQueueItem } from '../data/queue.js';
 import { showToast } from '../components/toast.js';
+import { getDeferredInstallPrompt, clearDeferredInstallPrompt } from '../main.js';
 
 export async function renderSettingsView(container) {
   const apiUrl = (await getSetting('apiUrl')) || '';
@@ -17,6 +18,7 @@ export async function renderSettingsView(container) {
   const bioEnabled = await isWebAuthnEnabled();
   const autoLockSetting = (await getSetting('autoLockTimeout')) ?? 60000;
   const currentTheme = (await getSetting('theme')) || 'cream';
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
   const queueItems = await listQueue();
   const failedItems = queueItems.filter((q) => q.status === 'failed');
@@ -26,6 +28,45 @@ export async function renderSettingsView(container) {
       <div class="border-b pb-3">
         <h2 class="font-serif text-xl font-bold text-ink">Pengaturan</h2>
       </div>
+
+      <!-- 0. Status Instalasi PWA -->
+      ${isStandalone ? `
+        <section class="rounded-card border border-emerald-300 bg-emerald-50/60 dark:bg-emerald-950/20 dark:border-emerald-800 p-4 shadow-card flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="inline-flex size-6 items-center justify-center rounded-full bg-emerald-600 text-cream text-xs font-bold">✓</span>
+            <div>
+              <h4 class="text-xs font-semibold text-ink">Aplikasi Terpasang (PWA)</h4>
+              <p class="text-[11px] text-ink-muted">Berjalan mandiri di layar utama. Pembaruan kode otomatis diperbarui.</p>
+            </div>
+          </div>
+        </section>
+      ` : `
+        <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
+              <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Pasang Aplikasi di HP (PWA)
+            </h3>
+            <span class="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-accent">Rekomendasi</span>
+          </div>
+          <p class="text-xs text-ink-muted">Pasang Daily Journal ke layar utama perangkat Anda agar dapat dibuka langsung tanpa address bar browser dan berjalan offline penuh.</p>
+
+          <div id="pwa-install-action" class="flex flex-col gap-2">
+            <button type="button" id="btn-install-pwa"
+              class="${getDeferredInstallPrompt() ? '' : 'hidden'} flex items-center justify-center gap-2 rounded-field bg-accent px-4 py-2.5 text-xs font-semibold text-cream hover:opacity-90 cursor-pointer">
+              📲 Pasang Aplikasi Sekarang
+            </button>
+
+            <div class="rounded-field bg-cream/60 dark:bg-sand/30 border p-3 text-xs text-ink-muted flex flex-col gap-1.5">
+              <p class="font-medium text-ink">Panduan Pasang di HP:</p>
+              <p>• <strong>Android (Chrome)</strong>: Ketuk menu titik tiga (⋮) di kanan atas browser → pilih <strong>"Install app"</strong> atau <strong>"Tambahkan ke Layar Utama"</strong>.</p>
+              <p>• <strong>iPhone / iOS (Safari)</strong>: Buka di Safari, ketuk tombol <strong>Share / Bagikan</strong> ⎋ di bawah → gulir lalu pilih <strong>"Tambahkan ke Layar Utama (Add to Home Screen)"</strong> ➕.</p>
+            </div>
+          </div>
+        </section>
+      `}
 
       <!-- 1. Sinkronisasi & API GAS -->
       <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
@@ -63,22 +104,29 @@ export async function renderSettingsView(container) {
           </button>
         </div>
 
-        ${failedItems.length > 0 ? `
-          <div class="mt-3 rounded-field bg-danger/10 p-3 text-xs text-danger">
-            <p class="font-medium">Ada ${failedItems.length} antrean yang gagal terkirim:</p>
-            <ul class="mt-2 space-y-1">
+        <!-- Status Antrean -->
+        <div class="border-t pt-2 mt-1">
+          <p class="text-[11px] text-ink-muted">
+            Total item dalam antrean lokal: <span class="font-medium text-ink">${queueItems.length}</span>
+            ${failedItems.length > 0 ? `<span class="text-danger ml-1 font-semibold">(${failedItems.length} gagal)</span>` : ''}
+          </p>
+          ${failedItems.length > 0 ? `
+            <div class="mt-2 flex flex-col gap-1.5">
               ${failedItems.map((item) => `
-                <li class="flex items-center justify-between">
-                  <span>${item.op} (${item.id.substring(0, 8)}...) - ${escapeHtml(item.error || 'Error')}</span>
-                  <button type="button" class="btn-delete-queue-item underline text-danger ml-2" data-id="${item.id}">Buang</button>
-                </li>
+                <div class="flex items-center justify-between rounded-field border border-danger/30 bg-danger/10 p-2 text-xs">
+                  <span class="truncate font-mono">${item.action} — ${item.entryId}</span>
+                  <button type="button" data-id="${item.id}"
+                    class="btn-delete-queue-item text-[11px] text-danger hover:underline cursor-pointer">
+                    Hapus
+                  </button>
+                </div>
               `).join('')}
-            </ul>
-          </div>
-        ` : ''}
+            </div>
+          ` : ''}
+        </div>
       </section>
 
-      <!-- 2. Keamanan & Kunci -->
+      <!-- 2. Keamanan & PIN -->
       <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -87,73 +135,67 @@ export async function renderSettingsView(container) {
           Keamanan & Kunci Lokal
         </h3>
 
-        <div class="flex items-center justify-between py-1 border-b">
+        <!-- Status PIN -->
+        <div class="flex items-center justify-between border-b pb-3">
           <div>
             <p class="text-xs font-medium text-ink">Kunci PIN</p>
-            <p class="text-[11px] text-ink-muted">${pinExists ? `Aktif (${pinLength} digit)` : 'Belum diatur'}</p>
+            <p class="text-[11px] text-ink-muted">${pinExists ? `PIN aktif (${pinLength} digit)` : 'PIN belum diaktifkan'}</p>
           </div>
           <button type="button" id="btn-manage-pin"
-            class="rounded-field border bg-paper px-3 py-1.5 text-xs font-medium text-ink hover:bg-sand cursor-pointer">
-            ${pinExists ? 'Ubah PIN' : 'Pasang PIN'}
+            class="rounded-field border px-3 py-1.5 text-xs font-medium cursor-pointer ${pinExists ? 'border-danger/40 text-danger hover:bg-danger/10' : 'bg-accent text-cream hover:opacity-90'}">
+            ${pinExists ? 'Hapus PIN' : 'Pasang PIN'}
           </button>
         </div>
 
-        ${pinExists ? `
-          <div class="flex items-center justify-between py-1 border-b">
-            <div>
-              <p class="text-xs font-medium text-danger">Hapus Kunci PIN</p>
-              <p class="text-[11px] text-ink-muted">Aplikasi tidak lagi meminta PIN saat dibuka.</p>
-            </div>
-            <button type="button" id="btn-remove-pin"
-              class="rounded-field border border-danger/30 text-danger px-3 py-1.5 text-xs font-medium hover:bg-danger/10 cursor-pointer">
-              Nonaktifkan
-            </button>
+        <!-- Biometrik WebAuthn -->
+        <div class="flex items-center justify-between border-b pb-3 ${bioSupported ? '' : 'opacity-50'}">
+          <div>
+            <p class="text-xs font-medium text-ink">Biometrik (Sidik Jari / Face ID)</p>
+            <p class="text-[11px] text-ink-muted">
+              ${!bioSupported ? 'Perangkat tidak mendukung WebAuthn' : (bioEnabled ? 'Biometrik aktif' : 'Gunakan sensor perangkat untuk membuka aplikasi')}
+            </p>
           </div>
-        ` : ''}
-
-        ${bioSupported ? `
-          <div class="flex items-center justify-between py-1 border-b">
-            <div>
-              <p class="text-xs font-medium text-ink">Buka Cepat Biometrik (WebAuthn)</p>
-              <p class="text-[11px] text-ink-muted">Gunakan sidik jari atau Face ID perangkat.</p>
-            </div>
-            <button type="button" id="btn-toggle-biometric"
-              class="rounded-field border px-3 py-1.5 text-xs font-medium transition cursor-pointer ${bioEnabled ? 'bg-accent text-cream' : 'bg-paper text-ink hover:bg-sand'}">
-              ${bioEnabled ? 'Aktif' : 'Aktifkan'}
+          ${bioSupported ? `
+            <button type="button" id="btn-toggle-bio"
+              class="rounded-field border px-3 py-1.5 text-xs font-medium cursor-pointer ${bioEnabled ? 'border-danger/40 text-danger hover:bg-danger/10' : 'bg-accent text-cream hover:opacity-90'}">
+              ${bioEnabled ? 'Nonaktifkan' : 'Aktifkan'}
             </button>
-          </div>
-        ` : ''}
+          ` : ''}
+        </div>
 
-        <div class="flex flex-col gap-2 pt-1">
-          <label class="text-xs font-medium text-ink-muted">Waktu Kunci Otomatis (Latar Belakang)</label>
-          <select id="setting-autolock-timeout"
-            class="rounded-field border bg-cream/40 p-2 text-xs text-ink focus:border-accent">
-            <option value="15000" ${autoLockSetting === 15000 ? 'selected' : ''}>15 detik</option>
-            <option value="60000" ${autoLockSetting === 60000 ? 'selected' : ''}>1 menit (disarankan)</option>
-            <option value="120000" ${autoLockSetting === 120000 ? 'selected' : ''}>2 menit</option>
-            <option value="300000" ${autoLockSetting === 300000 ? 'selected' : ''}>5 menit</option>
+        <!-- Auto-Lock Timeout -->
+        <div class="flex items-center justify-between pt-1">
+          <div>
+            <p class="text-xs font-medium text-ink">Kunci Otomatis (Latar Belakang)</p>
+            <p class="text-[11px] text-ink-muted">Kunci aplikasi jika ditinggalkan beberapa saat.</p>
+          </div>
+          <select id="select-autolock"
+            class="rounded-field border bg-cream/40 p-1.5 text-xs text-ink focus:border-accent focus:outline-hidden">
+            <option value="0" ${autoLockSetting === 0 ? 'selected' : ''}>Seketika (Instan)</option>
+            <option value="60000" ${autoLockSetting === 60000 ? 'selected' : ''}>1 Menit</option>
+            <option value="300000" ${autoLockSetting === 300000 ? 'selected' : ''}>5 Menit</option>
+            <option value="900000" ${autoLockSetting === 900000 ? 'selected' : ''}>15 Menit</option>
           </select>
         </div>
       </section>
 
-      <!-- 3. Ekspor & Backup Data -->
+      <!-- 3. Ekspor & Cadangan Data -->
       <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
-          Backup & Ekspor
+          Ekspor & Portabilitas Data
         </h3>
-        <p class="text-xs text-ink-muted">Unduh seluruh catatan Anda ke format terbuka tanpa lock-in vendor.</p>
-
-        <div class="flex flex-wrap items-center gap-2 pt-1">
+        <p class="text-xs text-ink-muted">Simpan salinan data jurnal Anda di komputer/HP secara mandiri bebas vendor lock-in.</p>
+        <div class="flex items-center gap-2 pt-1">
           <button type="button" id="btn-export-json"
-            class="rounded-field border bg-paper px-4 py-2 text-xs font-medium text-ink hover:bg-sand cursor-pointer">
+            class="rounded-field border bg-paper px-3 py-1.5 text-xs font-medium text-ink hover:bg-sand cursor-pointer">
             Ekspor JSON
           </button>
-          <button type="button" id="btn-export-markdown"
-            class="rounded-field border bg-paper px-4 py-2 text-xs font-medium text-ink hover:bg-sand cursor-pointer">
-            Ekspor Markdown (.zip / .txt)
+          <button type="button" id="btn-export-md"
+            class="rounded-field border bg-paper px-3 py-1.5 text-xs font-medium text-ink hover:bg-sand cursor-pointer">
+            Ekspor Markdown
           </button>
         </div>
       </section>
@@ -192,17 +234,41 @@ export async function renderSettingsView(container) {
 
       <!-- 6. Tentang -->
       <footer class="text-center text-xs text-ink-muted pt-2">
-        <p class="font-semibold text-ink">Daily Journal PWA v2.1</p>
-        <p class="mt-0.5">Offline-first &bull; Tailwind CSS 4 &bull; GAS Serverless</p>
+        <p class="font-semibold text-ink">Daily Journal PWA v2.2</p>
+        <p class="mt-0.5">Offline-first &bull; Tailwind CSS 4 &bull; GAS Serverless &bull; Auto-Update PWA</p>
       </footer>
     </div>
   `;
 
   // Attach Handlers
+  setupInstallHandlers(container);
   setupApiHandlers(container);
   setupSecurityHandlers(container);
   setupExportHandlers(container);
   setupThemeHandlers(container);
+}
+
+function setupInstallHandlers(container) {
+  const installBtn = container.querySelector('#btn-install-pwa');
+  if (!installBtn) return;
+
+  installBtn.addEventListener('click', async () => {
+    const promptEvent = getDeferredInstallPrompt();
+    if (promptEvent) {
+      promptEvent.prompt();
+      const choiceResult = await promptEvent.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        showToast('Aplikasi berhasil dipasang!', 'success');
+        clearDeferredInstallPrompt();
+        installBtn.classList.add('hidden');
+      }
+    }
+  });
+
+  const onInstallReady = () => {
+    installBtn.classList.remove('hidden');
+  };
+  window.addEventListener('pwa-install-ready', onInstallReady);
 }
 
 function setupApiHandlers(container) {
@@ -233,38 +299,37 @@ function setupApiHandlers(container) {
 
 function setupSecurityHandlers(container) {
   const managePinBtn = container.querySelector('#btn-manage-pin');
-  const removePinBtn = container.querySelector('#btn-remove-pin');
-  const toggleBioBtn = container.querySelector('#btn-toggle-biometric');
-  const autoLockSelect = container.querySelector('#setting-autolock-timeout');
+  const toggleBioBtn = container.querySelector('#btn-toggle-bio');
+  const autoLockSelect = container.querySelector('#select-autolock');
 
-  if (managePinBtn) {
-    managePinBtn.addEventListener('click', async () => {
-      const pin = window.prompt('Masukkan PIN baru (4 atau 6 angka):');
-      if (!pin) return;
-      if (!/^\d{4}$|^\d{6}$/.test(pin)) {
-        window.alert('PIN harus berupa 4 atau 6 digit angka.');
-        return;
-      }
-      const confirmPin = window.prompt('Konfirmasi PIN baru:');
-      if (pin !== confirmPin) {
-        window.alert('PIN konfirmasi tidak cocok.');
-        return;
-      }
-      await setPin(pin);
-      showToast('PIN berhasil dipasang', 'success');
-      renderSettingsView(container);
-    });
-  }
-
-  if (removePinBtn) {
-    removePinBtn.addEventListener('click', async () => {
-      if (window.confirm('Yakin ingin menonaktifkan PIN?')) {
-        await removePin();
-        showToast('PIN dinonaktifkan', 'info');
+  managePinBtn.addEventListener('click', async () => {
+    const pinExists = await isPinSet();
+    if (pinExists) {
+      const currentPin = window.prompt('Masukkan PIN saat ini untuk konfirmasi penghapusan:');
+      if (!currentPin) return;
+      const success = await removePin(currentPin);
+      if (success) {
+        showToast('PIN berhasil dihapus', 'info');
         renderSettingsView(container);
+      } else {
+        showToast('PIN salah', 'error');
       }
-    });
-  }
+    } else {
+      const newPin = window.prompt('Masukkan 4 atau 6 digit PIN baru:');
+      if (!newPin || (newPin.length !== 4 && newPin.length !== 6) || !/^\d+$/.test(newPin)) {
+        showToast('PIN harus berupa 4 atau 6 digit angka', 'error');
+        return;
+      }
+      const confirmPin = window.prompt('Ulangi PIN baru untuk konfirmasi:');
+      if (newPin !== confirmPin) {
+        showToast('Konfirmasi PIN tidak cocok', 'error');
+        return;
+      }
+      await setPin(newPin);
+      showToast('PIN berhasil diaktifkan', 'success');
+      renderSettingsView(container);
+    }
+  });
 
   if (toggleBioBtn) {
     toggleBioBtn.addEventListener('click', async () => {
@@ -274,49 +339,62 @@ function setupSecurityHandlers(container) {
         showToast('Biometrik dinonaktifkan', 'info');
         renderSettingsView(container);
       } else {
-        try {
-          await registerWebAuthn();
+        const pinExists = await isPinSet();
+        if (!pinExists) {
+          showToast('Aktifkan PIN terlebih dahulu sebelum memasang biometrik', 'error');
+          return;
+        }
+        showToast('Menghubungkan biometrik perangkat...', 'info');
+        const success = await registerWebAuthn('Daily Journal User');
+        if (success) {
           showToast('Biometrik berhasil diaktifkan', 'success');
           renderSettingsView(container);
-        } catch (err) {
-          window.alert(err.message || 'Gagal mengaktifkan biometrik');
+        } else {
+          showToast('Gagal mengaktifkan biometrik', 'error');
         }
       }
     });
   }
 
-  if (autoLockSelect) {
-    autoLockSelect.addEventListener('change', async (e) => {
-      await setSetting('autoLockTimeout', parseInt(e.target.value, 10));
-      showToast('Waktu auto-lock diperbarui', 'info');
-    });
-  }
+  autoLockSelect.addEventListener('change', async () => {
+    const timeout = parseInt(autoLockSelect.value, 10);
+    await setSetting('autoLockTimeout', timeout);
+    showToast('Waktu kunci otomatis diperbarui', 'success');
+  });
 }
 
 function setupExportHandlers(container) {
-  const jsonBtn = container.querySelector('#btn-export-json');
-  const mdBtn = container.querySelector('#btn-export-markdown');
+  const exportJsonBtn = container.querySelector('#btn-export-json');
+  const exportMdBtn = container.querySelector('#btn-export-md');
   const clearBtn = container.querySelector('#btn-clear-cache');
 
-  jsonBtn.addEventListener('click', async () => {
+  exportJsonBtn.addEventListener('click', async () => {
     const entries = await getAllEntries();
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(entries, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `daily-journal-backup-${new Date().toISOString().substring(0, 10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    const dataStr = JSON.stringify(entries, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `daily-journal-${new Date().toISOString().substring(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
     showToast('Ekspor JSON berhasil', 'success');
   });
 
-  mdBtn.addEventListener('click', async () => {
+  exportMdBtn.addEventListener('click', async () => {
     const entries = await getAllEntries();
-    let mdContent = '# Daily Journal Backup\n\n';
+    let mdContent = `# Cadangan Daily Journal\nDiunduh pada: ${new Date().toLocaleString('id-ID')}\nTotal Entri: ${entries.length}\n\n---\n\n`;
+
     entries.forEach((e) => {
-      mdContent += `## ${e.timestamp}\n`;
-      mdContent += `**Mood**: ${e.mood}/5 | **Tags**: ${Array.isArray(e.tags) ? e.tags.join(', ') : e.tags}\n\n`;
-      mdContent += `${e.text}\n\n---\n\n`;
+      mdContent += `## ${new Date(e.timestamp).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}\n`;
+      mdContent += `**Waktu**: ${new Date(e.timestamp).toLocaleTimeString('id-ID')}\n`;
+      mdContent += `**Mood**: ${e.mood || '-'}\n`;
+      if (e.tags && e.tags.length > 0) {
+        mdContent += `**Tag**: ${e.tags.map((t) => (t.startsWith('#') || t.startsWith('@') ? t : `#${t}`)).join(' ')}\n`;
+      }
+      mdContent += `\n${e.text || ''}\n\n---\n\n`;
     });
 
     const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8;' });

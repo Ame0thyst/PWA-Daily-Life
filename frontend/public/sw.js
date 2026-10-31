@@ -1,9 +1,10 @@
 /**
  * sw.js — Daily Journal Service Worker
  * Pre-caches application shell for offline-first operation.
- * Bypasses POST requests and cross-origin API calls.
+ * Network-first for navigation (HTML) so code updates deploy immediately to mobile.
+ * Cache-first for immutable static assets (icons, fonts, hashed scripts).
  */
-const CACHE_NAME = 'journal-static-v2';
+const CACHE_NAME = 'journal-static-v3';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -36,19 +37,41 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Skip POST, PUT, DELETE, and external API requests (e.g. script.google.com)
+  // Skip non-GET requests and external API calls (e.g. script.google.com)
   if (req.method !== 'GET' || url.origin !== location.origin) {
     return;
   }
 
-  // Cache-first for same-origin static assets
+  // 1. Navigation (HTML): Network-first with cache fallback
+  // Ensures any new GitHub push is loaded immediately when online
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(req, responseToCache);
+              cache.put('./index.html', responseToCache.clone());
+              cache.put('./', responseToCache.clone());
+            });
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          return (await caches.match(req)) || (await caches.match('./index.html')) || (await caches.match('./'));
+        })
+    );
+    return;
+  }
+
+  // 2. Static assets: Cache-first with network fallback
   event.respondWith(
     caches.match(req).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }
       return fetch(req).then((networkResponse) => {
-        // Cache newly fetched valid GET requests (scripts, fonts, styles)
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -56,14 +79,16 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      }).catch(() => {
-        // Fallback for navigation requests
-        if (req.mode === 'navigate') {
-          return caches.match('./index.html') || caches.match('./');
-        }
       });
     })
   );
+});
+
+// Listen for SKIP_WAITING signal from client
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Background sync support for Chromium browsers
