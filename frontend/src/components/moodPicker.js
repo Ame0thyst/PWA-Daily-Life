@@ -1,62 +1,47 @@
 /**
- * moodPicker.js — Redesigned liquid 5-level mood selector with fluid feedback
- * Features:
- * - Expressive emoji icons with liquid bounce interaction
- * - No truncated labels (multi-line balanced typography)
- * - Dynamic mood reaction card with comforting context
- * - Full accessibility (radiogroup, aria-checked, keyboard focus)
+ * moodPicker.js — 5 Frosted Glass Cards matching reference aesthetic
  */
 
 export const MOODS = [
   {
     level: 1,
-    label: 'Sangat buruk',
-    shortLabel: 'Sangat<br>Buruk',
-    icon: '😞',
-    color: '#B8644F',
-    glowColor: 'rgba(184, 100, 79, 0.35)',
-    twColor: 'bg-mood-1',
-    hint: 'Hari terasa berat? Tuliskan, tak perlu dipendam.',
+    label: 'Sangat Buruk',
+    icon: '😭',
+    color: '#EF4444',
+    glowColor: 'rgba(239, 68, 68, 0.4)',
+    hint: 'Sedang berat hari ini? Tuangkan semuanya di sini, tak perlu dipendam.',
   },
   {
     level: 2,
-    label: 'Kurang baik',
-    shortLabel: 'Kurang<br>Baik',
+    label: 'Kurang Baik',
     icon: '🙁',
-    color: '#D99A6C',
-    glowColor: 'rgba(217, 154, 108, 0.35)',
-    twColor: 'bg-mood-2',
-    hint: 'Kurang bersemangat? Ceritakan perlahan di sini.',
+    color: '#F97316',
+    glowColor: 'rgba(249, 115, 22, 0.4)',
+    hint: 'Kurang bersemangat? Ceritakan perlahan, luapkan bebanmu.',
   },
   {
     level: 3,
-    label: 'Biasa saja',
-    shortLabel: 'Biasa<br>Saja',
+    label: 'Biasa Saja',
     icon: '😐',
-    color: '#E6D3A3',
-    glowColor: 'rgba(230, 211, 163, 0.4)',
-    twColor: 'bg-mood-3',
-    hint: 'Hari yang tenang dan stabil. Ada hal menarik hari ini?',
+    color: '#EAB308',
+    glowColor: 'rgba(234, 179, 8, 0.4)',
+    hint: 'Hari yang tenang dan santai. Ada momen kecil yang menarik?',
   },
   {
     level: 4,
-    label: 'Baik',
-    shortLabel: 'Hari<br>Baik',
-    icon: '🙂',
-    color: '#A9C08F',
-    glowColor: 'rgba(169, 192, 143, 0.35)',
-    twColor: 'bg-mood-4',
-    hint: 'Suasana hati menyenangkan! Abadikan momen ini.',
+    label: 'Hari Baik',
+    icon: '😊',
+    color: '#22C55E',
+    glowColor: 'rgba(34, 197, 94, 0.4)',
+    hint: 'Suasana hati menyenangkan! Abadikan apa yang membuatmu tersenyum.',
   },
   {
     level: 5,
-    label: 'Sangat baik',
-    shortLabel: 'Sangat<br>Baik',
-    icon: '😄',
-    color: '#6E9F7A',
-    glowColor: 'rgba(110, 159, 122, 0.35)',
-    twColor: 'bg-mood-5',
-    hint: 'Luar biasa! Energi positif siap mengisi lembaranmu.',
+    label: 'Sangat Baik',
+    icon: '🤩',
+    color: '#F97316',
+    glowColor: 'rgba(249, 115, 22, 0.45)',
+    hint: 'Luar biasa! Energi positif siap mengisi lembaran jurnalmu hari ini.',
   },
 ];
 
@@ -66,17 +51,13 @@ export function renderMoodPicker(containerId, initialValue = null, onChange = nu
 
   let currentMood = initialValue;
 
-  function getActiveMoodObj() {
-    return MOODS.find((m) => m.level === currentMood) || null;
-  }
-
   function renderHTML() {
-    const activeObj = getActiveMoodObj();
+    const activeObj = MOODS.find((m) => m.level === currentMood) || null;
 
     container.innerHTML = `
       <div class="flex flex-col gap-2.5">
-        <!-- 5 Mood Buttons Row -->
-        <div role="radiogroup" aria-label="Pilih suasana hati" class="grid grid-cols-5 gap-2 select-none">
+        <!-- 5 Frosted Glass Cards Row -->
+        <div role="radiogroup" aria-label="Pilih suasana hati" class="grid grid-cols-5 gap-2 sm:gap-3 select-none">
           ${MOODS.map((m) => {
             const isSelected = currentMood === m.level;
             return `
@@ -84,54 +65,41 @@ export function renderMoodPicker(containerId, initialValue = null, onChange = nu
                 aria-checked="${isSelected ? 'true' : 'false'}"
                 aria-label="${m.label}"
                 data-mood="${m.level}"
-                class="mood-btn group relative flex flex-col items-center justify-center gap-1.5 rounded-2xl border py-2.5 px-1
+                class="mood-btn group relative flex flex-col items-center justify-center gap-2 rounded-2xl p-3 sm:py-4
                        transition-all duration-300 cursor-pointer overflow-hidden
                        ${isSelected
-                         ? 'border-transparent font-semibold shadow-md transform -translate-y-1 scale-[1.03]'
-                         : 'border-line/70 bg-paper/80 text-ink-muted hover:border-line hover:bg-sand/40 hover:text-ink hover:-translate-y-0.5'
-                       }"
-                style="${isSelected ? `background: linear-gradient(145deg, var(--color-paper), ${m.color}15); border-color: ${m.color}; box-shadow: 0 4px 14px ${m.glowColor};` : ''}">
-
-                <!-- Subtle selected ambient glow pill behind emoji -->
-                ${isSelected ? `<span class="absolute -top-3 size-12 rounded-full blur-md opacity-40 pointer-events-none" style="background: ${m.color}"></span>` : ''}
+                         ? 'mood-card-selected'
+                         : 'glass-card text-white/70 hover:text-white'
+                       }">
 
                 <!-- Emoji Icon -->
-                <span class="relative text-2xl sm:text-3xl leading-none transition-transform duration-300 group-hover:scale-115 ${isSelected ? 'scale-115' : ''}" aria-hidden="true">
+                <span class="text-3xl sm:text-4xl leading-none transition-transform duration-300 group-hover:scale-115 ${isSelected ? 'scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]' : ''}" aria-hidden="true">
                   ${m.icon}
                 </span>
 
-                <!-- Multi-line Label (Never truncated) -->
-                <span class="relative text-[11px] leading-[1.15] text-center tracking-tight transition-colors duration-200 ${isSelected ? 'text-ink font-semibold' : 'text-ink-muted'}">
-                  ${m.shortLabel}
+                <!-- Single line clean label -->
+                <span class="text-xs sm:text-[13px] font-medium tracking-tight text-center whitespace-nowrap ${isSelected ? 'text-white font-semibold' : 'text-white/80'}">
+                  ${m.label}
                 </span>
-
-                <!-- Active Indicator Dot -->
-                ${isSelected ? `
-                  <span class="absolute bottom-1 size-1 rounded-full" style="background-color: ${m.color}"></span>
-                ` : ''}
               </button>
             `;
           }).join('')}
         </div>
 
-        <!-- Dynamic Mood Reaction / Helper Message -->
-        <div id="mood-hint-banner"
-          class="flex items-center gap-2 rounded-xl border border-line/50 bg-paper/60 px-3 py-2 text-xs transition-all duration-300 backdrop-blur-xs">
+        <!-- Dynamic Contextual Helper Banner -->
+        <div class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs backdrop-blur-md text-white/70">
           ${activeObj ? `
-            <span class="text-base leading-none">${activeObj.icon}</span>
-            <div class="flex flex-col min-w-0">
-              <span class="font-semibold text-ink leading-tight">${activeObj.label}</span>
-              <span class="text-[11px] text-ink-muted leading-tight truncate">${activeObj.hint}</span>
-            </div>
+            <span class="text-base">${activeObj.icon}</span>
+            <span class="font-medium text-white">${activeObj.label}</span> &bull; 
+            <span class="text-white/60 truncate">${activeObj.hint}</span>
           ` : `
-            <span class="text-base leading-none text-accent">💭</span>
-            <span class="text-ink-muted text-[11px]">Pilih salah satu suasana hati untuk mulai mencatat.</span>
+            <span class="text-white/50">💬</span>
+            <span class="text-white/60">Pilih salah satu suasana hati untuk mulai mencatat.</span>
           `}
         </div>
       </div>
     `;
 
-    // Attach click events
     container.querySelectorAll('.mood-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const level = parseInt(btn.dataset.mood, 10);

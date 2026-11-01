@@ -2,6 +2,8 @@ const P = PropertiesService.getScriptProperties();
 // 10 Kolom Standar: Kolom B adalah User_Key untuk isolasi multi-user
 const COLS = ['ID','User_Key','Timestamp','Mood','Tags','Deleted','Updated_At',
               'Drive_File_ID','Teks','Thumbnail_Base64'];
+// Kolom Tabel Profil Pengguna (1 baris per user key)
+const PROFILE_COLS = ['User_Key', 'Username', 'Avatar_File_ID', 'Avatar_Base64', 'Updated_At'];
 const MAX_IMG_B64 = 3000000; // sekitar 2,2 MB biner
 
 function json_(o) {
@@ -10,37 +12,49 @@ function json_(o) {
 }
 
 /**
- * Mendapatkan sheet 'entries'. Jika belum ada atau kolomnya belum pas,
- * fungsi ini otomatis membuat sheet dan mengatur header serta formatnya!
+ * Mendapatkan sheet 'entries'. Otomatis membuat dan memformat jika belum ada.
  */
 function sheet_() {
   const ss = SpreadsheetApp.openById(P.getProperty('SHEET_ID'));
   let sh = ss.getSheetByName('entries');
   
-  // 1. Buat otomatis sheet 'entries' jika belum ada
   if (!sh) {
     sh = ss.insertSheet('entries');
   }
 
-  // 2. Cek baris header (Baris 1)
   if (sh.getLastRow() < 1) {
-    // Sheet kosong: pasang header 10 kolom otomatis
     sh.getRange(1, 1, 1, COLS.length).setValues([COLS]);
-    formatHeaderAndColumns_(sh);
+    formatHeaderAndColumns_(sh, COLS, '#F4EFE6', '#2B2620');
   } else {
-    // Cek apakah kolom B sudah User_Key atau masih versi lama 9 kolom
     const firstRow = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 10)).getValues()[0];
     if (firstRow[1] !== 'User_Key') {
-      // Migrasi otomatis: sisipkan kolom User_Key di Kolom B
-      sh.insertColumnAfter(1); // Kolom 2 baru
+      sh.insertColumnAfter(1);
       sh.getRange(1, 2).setValue('User_Key');
-      // Isi default 'DEFAULT_USER' untuk baris lama agar tidak hilang
       const lastRow = sh.getLastRow();
       if (lastRow > 1) {
         sh.getRange(2, 2, lastRow - 1, 1).setValue('DEFAULT_USER');
       }
-      formatHeaderAndColumns_(sh);
+      formatHeaderAndColumns_(sh, COLS, '#F4EFE6', '#2B2620');
     }
+  }
+
+  return sh;
+}
+
+/**
+ * Mendapatkan sheet 'profiles' untuk data username & foto profil per User_Key
+ */
+function profileSheet_() {
+  const ss = SpreadsheetApp.openById(P.getProperty('SHEET_ID'));
+  let sh = ss.getSheetByName('profiles');
+  
+  if (!sh) {
+    sh = ss.insertSheet('profiles');
+  }
+
+  if (sh.getLastRow() < 1) {
+    sh.getRange(1, 1, 1, PROFILE_COLS.length).setValues([PROFILE_COLS]);
+    formatHeaderAndColumns_(sh, PROFILE_COLS, '#EAE6DF', '#1E1B18');
   }
 
   return sh;
@@ -49,33 +63,31 @@ function sheet_() {
 /**
  * Format tampilan header, warna, freeze row, dan Plain Text otomatis
  */
-function formatHeaderAndColumns_(sh) {
+function formatHeaderAndColumns_(sh, cols, bgColor, textColor) {
   try {
-    const headerRange = sh.getRange(1, 1, 1, COLS.length);
+    const headerRange = sh.getRange(1, 1, 1, cols.length);
     headerRange.setFontWeight('bold');
-    headerRange.setBackground('#F4EFE6'); // Warna cream elegan
-    headerRange.setFontColor('#2B2620');
+    headerRange.setBackground(bgColor);
+    headerRange.setFontColor(textColor);
     sh.setFrozenRows(1);
-
-    // Set Plain Text otomatis untuk ID (A), User_Key (B), Timestamp (C), Updated_At (G)
-    // agar Google Sheets tidak merusak format teks & tanggal ISO
-    sh.getRange('A:C').setNumberFormat('@');
-    sh.getRange('G:G').setNumberFormat('@');
+    sh.getRange(1, 1, sh.getMaxRows(), 2).setNumberFormat('@');
   } catch (_) {}
 }
 
 /**
  * FUNGSI SETUP OTOMATIS:
- * Jalankan fungsi setupAuto() ini sekali dari editor Apps Script jika Anda ingin
- * membuat/memformat seluruh sheet & properties tanpa repot!
+ * Konfigurasi sheet 'entries' dan 'profiles' secara otomatis
  */
 function setupAuto() {
-  const sh = sheet_();
+  const shEntries = sheet_();
+  const shProfiles = profileSheet_();
   return {
     ok: true,
-    message: 'Setup otomatis selesai! Sheet "entries" telah dikonfigurasi dengan 10 kolom.',
-    sheetName: sh.getName(),
-    columns: COLS
+    message: 'Setup otomatis selesai! Sheet "entries" (10 kolom) dan "profiles" (5 kolom) telah aktif.',
+    entriesSheet: shEntries.getName(),
+    profilesSheet: shProfiles.getName(),
+    columns: COLS,
+    profileColumns: PROFILE_COLS
   };
 }
 
@@ -85,14 +97,13 @@ function authOk_(t) {
 }
 
 function doGet(e) { 
-  // Jika parameter ?setup=1 disertakan dengan token yang benar, jalankan setup otomatis
   if (e && e.parameter && e.parameter.setup === '1') {
     if (authOk_(e.parameter.token)) {
       return json_(setupAuto());
     }
   }
-  return json_({ ok: true, service: 'daily-journal', multiUser: true }); 
-} // health check
+  return json_({ ok: true, service: 'daily-journal', multiUser: true, profiles: true }); 
+}
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -100,12 +111,10 @@ function doPost(e) {
     const req = JSON.parse(e.postData.contents);
     if (!authOk_(req.token)) return json_({ ok: false, error: 'unauthorized' });
 
-    // Panggilan op khusus setup otomatis via API
     if (req.op === 'setup') {
       return json_(setupAuto());
     }
 
-    // Validasi User_Key wajib disertakan untuk semua operasi jurnal
     const userKey = (req.userKey || '').trim().toUpperCase();
     if (!userKey) {
       return json_({ ok: false, error: 'missing_user_key' });
@@ -113,13 +122,15 @@ function doPost(e) {
 
     lock.waitLock(20000);
     switch (req.op) {
-      case 'create': return json_(createEntry_(req.entry, userKey));
-      case 'update': return json_(updateEntry_(req.entry, userKey));
-      case 'delete': return json_(deleteEntry_(req.id, userKey));
-      case 'list':   return json_(listEntries_(userKey, req.limit || 30));
-      case 'stats':  return json_(stats_(userKey));
-      case 'image':  return json_(getImage_(req.fileId));
-      default:       return json_({ ok: false, error: 'unknown_op' });
+      case 'create':      return json_(createEntry_(req.entry, userKey));
+      case 'update':      return json_(updateEntry_(req.entry, userKey));
+      case 'delete':      return json_(deleteEntry_(req.id, userKey));
+      case 'list':        return json_(listEntries_(userKey, req.limit || 30));
+      case 'stats':       return json_(stats_(userKey));
+      case 'image':       return json_(getImage_(req.fileId));
+      case 'get_profile': return json_(getProfile_(userKey));
+      case 'set_profile': return json_(setProfile_(req.profile, userKey));
+      default:            return json_({ ok: false, error: 'unknown_op' });
     }
   } catch (err) {
     return json_({ ok: false, error: String(err) });
@@ -137,7 +148,7 @@ function findRow_(sh, id, userKey) {
     const rId = String(values[i][0]);
     const rUser = String(values[i][1]).trim().toUpperCase();
     if (rId === String(id) && (!userKey || rUser === userKey)) {
-      return i + 2; // Baris riil di sheet (1-based, setelah header)
+      return i + 2;
     }
   }
   return null;
@@ -146,7 +157,7 @@ function findRow_(sh, id, userKey) {
 function createEntry_(en, userKey) {
   const sh = sheet_();
   if (findRow_(sh, en.id, userKey)) {
-    return { ok: true, id: en.id, duplicate: true }; // idempoten
+    return { ok: true, id: en.id, duplicate: true };
   }
 
   let fileId = '';
@@ -167,12 +178,10 @@ function updateEntry_(en, userKey) {
   const row = findRow_(sh, en.id, userKey);
   if (!row) return { ok: false, error: 'not_found' };
   
-  const cur = sh.getRange(row, 7).getValue(); // Kolom G: Updated_At
-  if (cur && cur > en.updatedAt) return { ok: true, id: en.id, skipped: true }; // last-write-wins
+  const cur = sh.getRange(row, 7).getValue();
+  if (cur && cur > en.updatedAt) return { ok: true, id: en.id, skipped: true };
   
-  // Update kolom Mood(D), Tags(E), Deleted(F), Updated_At(G)
   sh.getRange(row, 4, 1, 4).setValues([[en.mood, (en.tags||[]).join(','), false, en.updatedAt]]);
-  // Update kolom Teks (Kolom I)
   sh.getRange(row, 9).setValue(en.text);
   return { ok: true, id: en.id };
 }
@@ -180,15 +189,13 @@ function updateEntry_(en, userKey) {
 function deleteEntry_(id, userKey) {
   const sh = sheet_(); 
   const row = findRow_(sh, id, userKey);
-  if (!row) return { ok: true, id: id }; // sudah tidak ada: anggap sukses
+  if (!row) return { ok: true, id: id };
   
-  // Kolom F: Deleted, Kolom G: Updated_At
   sh.getRange(row, 6).setValue(true);
   sh.getRange(row, 7).setValue(new Date().toISOString());
   return { ok: true, id: id };
 }
 
-// Mengambil seluruh catatan milik User_Key tertentu saja
 function listEntries_(userKey, limit) {
   const sh = sheet_(); 
   const last = sh.getLastRow();
@@ -197,7 +204,6 @@ function listEntries_(userKey, limit) {
   const rows = sh.getRange(2, 1, last - 1, COLS.length).getValues();
   const items = [];
 
-  // Loop mundur (dari entri terbaru di bawah ke atas)
   for (let i = rows.length - 1; i >= 0; i--) {
     const r = rows[i];
     const rUser = String(r[1]).trim().toUpperCase();
@@ -221,7 +227,6 @@ function listEntries_(userKey, limit) {
   return { ok: true, items: items };
 }
 
-// Statistik aktivitas hanya untuk User_Key yang meminta
 function stats_(userKey) {
   const sh = sheet_(); 
   const last = sh.getLastRow();
@@ -251,4 +256,80 @@ function stats_(userKey) {
 function getImage_(fileId) {
   const blob = DriveApp.getFileById(fileId).getBlob();
   return { ok: true, base64: Utilities.base64Encode(blob.getBytes()) };
+}
+
+// ==========================================
+// USER PROFILE HANDLERS (Username & Foto Profil)
+// ==========================================
+
+function getProfile_(userKey) {
+  const sh = profileSheet_();
+  const last = sh.getLastRow();
+  if (last < 2) return { ok: true, profile: null };
+
+  const rows = sh.getRange(2, 1, last - 1, PROFILE_COLS.length).getValues();
+  for (let i = 0; i < rows.length; i++) {
+    const rUser = String(rows[i][0]).trim().toUpperCase();
+    if (rUser === userKey) {
+      return {
+        ok: true,
+        profile: {
+          userKey: rows[i][0],
+          username: rows[i][1] || '',
+          avatarFileId: rows[i][2] || '',
+          avatarBase64: rows[i][3] || '',
+          updatedAt: rows[i][4] || ''
+        }
+      };
+    }
+  }
+
+  return { ok: true, profile: null };
+}
+
+function setProfile_(profile, userKey) {
+  if (!profile) return { ok: false, error: 'missing_profile' };
+  const sh = profileSheet_();
+  const last = sh.getLastRow();
+  const username = (profile.username || '').trim();
+  let avatarBase64 = profile.avatarBase64 || '';
+  let avatarFileId = profile.avatarFileId || '';
+  const updatedAt = new Date().toISOString();
+
+  // Jika ada foto profil HD baru yang dikirim
+  if (profile.avatarHD && profile.avatarHD.length <= MAX_IMG_B64) {
+    try {
+      const bytes = Utilities.base64Decode(profile.avatarHD);
+      const blob = Utilities.newBlob(bytes, 'image/jpeg', 'avatar_' + userKey + '.jpg');
+      avatarFileId = DriveApp.getFolderById(P.getProperty('FOLDER_ID')).createFile(blob).getId();
+    } catch (_) {}
+  }
+
+  let existingRow = null;
+  if (last >= 2) {
+    const values = sh.getRange(2, 1, last - 1, 1).getValues();
+    for (let i = 0; i < values.length; i++) {
+      if (String(values[i][0]).trim().toUpperCase() === userKey) {
+        existingRow = i + 2;
+        break;
+      }
+    }
+  }
+
+  if (existingRow) {
+    sh.getRange(existingRow, 2, 1, 4).setValues([[username, avatarFileId, avatarBase64, updatedAt]]);
+  } else {
+    sh.appendRow([userKey, username, avatarFileId, avatarBase64, updatedAt]);
+  }
+
+  return {
+    ok: true,
+    profile: {
+      userKey: userKey,
+      username: username,
+      avatarFileId: avatarFileId,
+      avatarBase64: avatarBase64,
+      updatedAt: updatedAt
+    }
+  };
 }

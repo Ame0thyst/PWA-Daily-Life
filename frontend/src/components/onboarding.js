@@ -5,6 +5,8 @@ import { generateSecretKey, setStoredUserKey, validateSecretKey } from '../data/
 import { showToast } from './toast.js';
 import { flushQueue } from '../data/sync.js';
 import { restoreUserEntries } from '../data/restore.js';
+import { setUserProfile } from '../data/db.js';
+import { apiSetProfile } from '../data/api.js';
 
 export function renderOnboardingModal(onComplete) {
   let modalContainer = document.getElementById('onboarding-modal');
@@ -71,6 +73,12 @@ export function renderOnboardingModal(onComplete) {
             class="mt-1 inline-flex items-center gap-1.5 rounded-field border bg-paper px-3 py-1.5 text-xs font-medium text-ink hover:bg-sand cursor-pointer">
             📋 Salin Kunci
           </button>
+        </div>
+
+        <div class="flex flex-col gap-1.5 text-left">
+          <label class="text-xs font-semibold text-ink">Nama Panggilan / Username</label>
+          <input type="text" id="input-onboarding-username" placeholder="Nama Anda (misal: Alif)" value="Alif" maxlength="24"
+            class="rounded-field border bg-cream/40 p-2.5 text-xs text-ink focus:border-accent focus:outline-hidden" />
         </div>
 
         <div class="flex items-start gap-2 text-[11px] text-ink-muted">
@@ -167,9 +175,17 @@ export function renderOnboardingModal(onComplete) {
   });
 
   btnConfirmNew.addEventListener('click', async () => {
+    const usernameInput = modalContainer.querySelector('#input-onboarding-username');
+    const chosenName = usernameInput?.value.trim() || 'Alif';
+    await setUserProfile({ username: chosenName });
     await setStoredUserKey(activeGeneratedKey);
+
+    if (navigator.onLine) {
+      apiSetProfile({ username: chosenName }).catch(() => {});
+    }
+
     modalContainer.remove();
-    showToast('Kunci diary berhasil dipasang!', 'success');
+    showToast(`Selamat datang, ${chosenName}! Kunci diary aktif.`, 'success');
     if (onComplete) onComplete(activeGeneratedKey);
     flushQueue();
   });

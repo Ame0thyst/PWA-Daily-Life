@@ -16,37 +16,35 @@
 
 @theme {
   /* Colors */
-  --color-cream: #FAF6EE;
-  --color-paper: #FFFDF8;
-  --color-sand: #F1E9DA;
-  --color-line: #E4D9C5;
-  --color-ink: #3A3631;
-  --color-ink-muted: #6B6559;
-  --color-accent: #A66A3F;
-  --color-accent-soft: #EBD8C6;
-  --color-accent-dark: #8C5228;
-  --color-danger: #B3473B;
+  --color-cream: #0B0E17;
+  --color-paper: #121726;
+  --color-sand: #1C2337;
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-ink: #F8FAFC;
+  --color-ink-muted: #94A3B8;
+  --color-accent: #F97316;
+  --color-accent-soft: rgba(249, 115, 22, 0.2);
+  --color-accent-dark: #C2410C;
+  --color-danger: #EF4444;
 
-  /* Mood 1-5 and empty heatmap day */
-  --color-mood-1: #B8644F;
-  --color-mood-2: #D99A6C;
-  --color-mood-3: #E6D3A3;
-  --color-mood-4: #A9C08F;
-  --color-mood-5: #6E9F7A;
-  --color-heat-empty: #EDE5D4;
+  /* Mood 1-5 */
+  --color-mood-1: #EF4444;
+  --color-mood-2: #F97316;
+  --color-mood-3: #EAB308;
+  --color-mood-4: #22C55E;
+  --color-mood-5: #F59E0B;
+  --color-heat-empty: #1E293B;
 
   /* Typography */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Lora", ui-serif, Georgia, serif;
 
   /* Shapes */
-  --radius-card: 16px;
-  --radius-field: 12px;
-  --shadow-card: 0 2px 8px rgb(58 54 49 / 0.05);
-  --shadow-glass: 0 8px 32px 0 rgba(58, 54, 49, 0.08);
+  --radius-card: 20px;
+  --radius-field: 14px;
 }
 
-/* Default border color override (TW4 defaults to currentColor) */
+/* Default border color */
 @layer base {
   *, ::before, ::after { border-color: var(--color-line); }
 
@@ -54,58 +52,120 @@
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     -webkit-user-select: none;
+    background-color: #080B12;
+    background-image: 
+      radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+      radial-gradient(circle at 85% 20%, rgba(244, 114, 182, 0.1) 0%, transparent 40%),
+      radial-gradient(circle at 50% 60%, rgba(14, 165, 233, 0.08) 0%, transparent 50%),
+      radial-gradient(2px 2px at 20px 30px, #ffffff 1px, transparent 0),
+      radial-gradient(2px 2px at 70px 120px, rgba(255, 255, 255, 0.8) 1px, transparent 0),
+      radial-gradient(1.5px 1.5px at 150px 70px, rgba(255, 255, 255, 0.6) 1px, transparent 0),
+      radial-gradient(1.5px 1.5px at 240px 190px, rgba(255, 255, 255, 0.7) 1px, transparent 0),
+      radial-gradient(2px 2px at 320px 80px, #ffffff 1px, transparent 0),
+      radial-gradient(1px 1px at 380px 140px, rgba(255, 255, 255, 0.5) 1px, transparent 0);
+    background-repeat: repeat;
+    background-size: 100% 100%, 100% 100%, 100% 100%, 300px 300px, 350px 350px, 400px 400px, 280px 280px, 320px 320px, 260px 260px;
+    color: #F8FAFC;
+    min-height: 100vh;
   }
 
-  /* Allow text selection inside editors, paragraphs, inputs */
   textarea, input, p, [contenteditable="true"] {
     user-select: text;
     -webkit-user-select: text;
   }
 
   /* Custom scrollbar */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--color-line); border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--color-ink-muted); }
+  ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 }
 
-/* Dark theme override */
-[data-theme="dark"] {
-  --color-cream: #1A1816;
-  --color-paper: #23201C;
-  --color-sand: #2F2A24;
-  --color-line: #3D372F;
-  --color-ink: #EFE9DD;
-  --color-ink-muted: #A89F8E;
-  --color-accent: #D49A6A;
-  --color-accent-soft: #423022;
-  --color-accent-dark: #B87B4E;
-  --color-danger: #E06050;
-  --shadow-card: 0 2px 8px rgb(0 0 0 / 0.25);
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+/* Light theme override if user toggles theme */
+[data-theme="light"] {
+  --color-cream: #FAF6EE;
+  --color-paper: #FFFDF8;
+  --color-sand: #F1E9DA;
+  --color-line: #E4D9C5;
+  --color-ink: #2B2620;
+  --color-ink-muted: #6B6559;
+  --color-accent: #D97706;
+  --color-accent-soft: #FDE68A;
 }
 
-/* Toast animation */
-@keyframes toast-in {
-  from { opacity: 0; transform: translateY(16px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes toast-out {
-  from { opacity: 1; transform: translateY(0) scale(1); }
-  to { opacity: 0; transform: translateY(-10px) scale(0.96); }
-}
-
-@layer components {
-  .toast {
-    animation: toast-in 250ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .toast-exit {
-    animation: toast-out 200ms ease-in forwards;
-  }
+[data-theme="light"] body {
+  background-color: #FAF6EE;
+  background-image: none;
+  color: #2B2620;
 }
 
 /* ========================================================
-   LIQUID PAGE TRANSITIONS (Fluid Water-Flow Animations)
+   IRIDESCENT AURORA & GLASSMORPHISM CLASSES
+   ======================================================== */
+.glass-panel {
+  background: rgba(18, 23, 38, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* Iridescent Holographic Pill for Active Navigation */
+.nav-tab-aurora {
+  background: linear-gradient(135deg, rgba(165, 180, 252, 0.28) 0%, rgba(244, 114, 182, 0.28) 50%, rgba(129, 230, 217, 0.28) 100%) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 24px rgba(165, 180, 252, 0.3), inset 0 0 12px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Sunset Orange Action Button */
+.btn-sunset {
+  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.35);
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-sunset:hover:not(:disabled) {
+  background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
+  box-shadow: 0 6px 26px rgba(249, 115, 22, 0.5);
+  transform: translateY(-1px);
+}
+.btn-sunset:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Glowing Date Capsule */
+.date-capsule {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(165, 180, 252, 0.3);
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.2);
+}
+
+/* Selected Mood Glowing Box */
+.mood-card-selected {
+  border: 2px solid #F97316 !important;
+  background: linear-gradient(145deg, rgba(249, 115, 22, 0.16), rgba(255, 255, 255, 0.05)) !important;
+  box-shadow: 0 0 24px rgba(249, 115, 22, 0.4), inset 0 0 12px rgba(249, 115, 22, 0.15) !important;
+  transform: translateY(-3px) scale(1.03);
+}
+
+/* ========================================================
+   LIQUID PAGE TRANSITIONS
    ======================================================== */
 @keyframes liquid-enter-from-right {
   0% {
@@ -134,201 +194,122 @@
 }
 
 @keyframes liquid-exit-to-left {
-  0% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(-18px, 0, 0) scale(0.985);
-    filter: blur(3px);
-  }
+  0% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  100% { opacity: 0; transform: translate3d(-18px, 0, 0) scale(0.985); filter: blur(3px); }
 }
 
 @keyframes liquid-exit-to-right {
-  0% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(18px, 0, 0) scale(0.985);
-    filter: blur(3px);
-  }
+  0% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  100% { opacity: 0; transform: translate3d(18px, 0, 0) scale(0.985); filter: blur(3px); }
 }
 
 @keyframes liquid-fade-in {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0) scale(0.988);
-    filter: blur(3px);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
-  }
+  0% { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.988); filter: blur(3px); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
 }
 
 @keyframes liquid-fade-out {
-  0% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(0, -6px, 0) scale(0.99);
-  }
+  0% { opacity: 1; transform: translate3d(0, 0, 0); }
+  100% { opacity: 0; transform: translate3d(0, -6px, 0) scale(0.99); }
 }
 
-@layer components {
-  /* Fluid liquid transitions with natural water easing */
-  .view-liquid-right {
-    animation: liquid-enter-from-right 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-  .view-liquid-left {
-    animation: liquid-enter-from-left 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-  .view-liquid-fade {
-    animation: liquid-fade-in 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
+.view-liquid-right {
+  animation: liquid-enter-from-right 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.view-liquid-left {
+  animation: liquid-enter-from-left 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.view-liquid-fade {
+  animation: liquid-fade-in 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.view-liquid-exit-left {
+  animation: liquid-exit-to-left 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.view-liquid-exit-right {
+  animation: liquid-exit-to-right 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.view-liquid-exit-fade {
+  animation: liquid-fade-out 160ms ease-in forwards;
+}
 
-  .view-liquid-exit-left {
-    animation: liquid-exit-to-left 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
-  }
-  .view-liquid-exit-right {
-    animation: liquid-exit-to-right 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
-  }
-  .view-liquid-exit-fade {
-    animation: liquid-fade-out 180ms ease-in forwards;
-  }
-
-  #app:not(.hidden) {
+#app:not(.hidden) {
   animation: liquid-fade-in 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Backward compatibility */
-  .view-enter {
-    animation: liquid-fade-in 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-  .view-exit {
-    animation: liquid-fade-out 180ms ease-in forwards;
-  }
-}
-
 /* ========================================================
-   SPLASH / OPENING SCREEN ANIMATIONS
+   SPLASH / OPENING SCREEN
    ======================================================== */
 @keyframes splash-ripple {
-  0% {
-    transform: scale(0.85);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 0.4;
-  }
-  100% {
-    transform: scale(1.35);
-    opacity: 0;
-  }
+  0% { transform: scale(0.85); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 0.4; }
+  100% { transform: scale(1.35); opacity: 0; }
 }
 
 @keyframes splash-liquid-flow {
-  0% {
-    width: 0%;
-    transform: translateX(-10%);
-  }
-  50% {
-    width: 70%;
-  }
-  100% {
-    width: 100%;
-    transform: translateX(0%);
-  }
+  0% { width: 0%; transform: translateX(-10%); }
+  50% { width: 70%; }
+  100% { width: 100%; transform: translateX(0%); }
 }
 
 @keyframes splash-exit-anim {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-    filter: blur(0);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.05) translateY(-12px);
-    filter: blur(8px);
-  }
+  0% { opacity: 1; transform: scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: scale(1.05) translateY(-12px); filter: blur(8px); }
 }
 
 .splash-ripple-ring {
   animation: splash-ripple 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
-.splash-ripple-delay {
-  animation-delay: 0.5s;
-}
-.splash-ripple-delay-2 {
-  animation-delay: 1.0s;
-}
+.splash-ripple-delay { animation-delay: 0.5s; }
+.splash-ripple-delay-2 { animation-delay: 1.0s; }
 
 .splash-liquid-bar {
   animation: splash-liquid-flow 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
-
 .splash-exit {
   animation: splash-exit-anim 350ms cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
 /* ========================================================
-   PIN PAD AND COMPONENTS
+   TOAST & PIN
    ======================================================== */
-@layer components {
-  .pin-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
-    font-size: 1.5rem;
-    font-weight: 500;
-    background: var(--color-paper);
-    color: var(--color-ink);
-    border: 1px solid var(--color-line);
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgb(58 54 49 / 0.04);
-    transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .pin-btn:active {
-    background: var(--color-sand);
-    transform: scale(0.92);
-    box-shadow: none;
-  }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-10px) scale(0.96); }
+}
+.toast { animation: toast-in 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.toast-exit { animation: toast-out 200ms ease-in forwards; }
+
+.pin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.06);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pin-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(0.92);
 }
 
-/* Skeleton pulse */
-@layer utilities {
-  .skeleton {
-    background: linear-gradient(90deg, var(--color-sand) 25%, var(--color-line) 50%, var(--color-sand) 75%);
-    background-size: 200% 100%;
-    animation: skeleton-pulse 1.6s ease-in-out infinite;
-  }
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
 }
 @keyframes skeleton-pulse {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
-}
-
-/* Subtle water/paper texture background */
-.liquid-card {
-  background: var(--color-paper);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease;
-}
-.liquid-card:hover {
-  box-shadow: 0 4px 16px rgb(58 54 49 / 0.08);
 }

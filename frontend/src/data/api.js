@@ -53,3 +53,11 @@ export async function apiGetStats() {
 export async function apiGetImage(fileId) {
   return callApi('image', { fileId });
 }
+
+export async function apiGetProfile() {
+  return callApi('get_profile');
+}
+
+export async function apiSetProfile(profile) {
+  return callApi('set_profile', { profile });
+}

@@ -74,3 +74,4 @@ export function showSplashScreen(containerId = 'splash-screen', minDurationMs = 
     }, { once: true });
   });
 }
+

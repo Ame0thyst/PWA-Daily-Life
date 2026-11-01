@@ -1,7 +1,7 @@
 /**
  * settings.js — Settings view: Security, Sync, Data export/backup, Theme, and App info
  */
-import { getSetting, setSetting, clearAllData, getAllEntries } from '../data/db.js';
+import { getSetting, setSetting, clearAllData, getAllEntries, getUserProfile } from '../data/db.js';
 import { isPinSet, setPin, removePin, getPinLength } from '../lock/pin.js';
 import { isWebAuthnSupported, isWebAuthnEnabled, registerWebAuthn, disableWebAuthn } from '../lock/webauthn.js';
 import { flushQueue } from '../data/sync.js';
@@ -11,8 +11,10 @@ import { getDeferredInstallPrompt, clearDeferredInstallPrompt, isStandalone } fr
 import { getStoredUserKey, setStoredUserKey, validateSecretKey } from '../data/key.js';
 import { restoreUserEntries } from '../data/restore.js';
 import { generateInviteLink } from '../components/invite.js';
+import { openProfileModal } from '../components/profileModal.js';
 
 export async function renderSettingsView(container) {
+  const profile = await getUserProfile();
   const apiUrl = (await getSetting('apiUrl')) || '';
   const apiToken = (await getSetting('apiToken')) || '';
   const userKey = (await getStoredUserKey()) || '';
@@ -29,9 +31,26 @@ export async function renderSettingsView(container) {
 
   container.innerHTML = `
     <div class="flex flex-col gap-6 pb-12">
-      <div class="border-b pb-3">
-        <h2 class="font-serif text-xl font-bold text-ink">Pengaturan</h2>
+      <div class="border-b border-white/10 pb-3 flex items-center justify-between">
+        <h2 class="font-serif text-xl font-bold text-white">Pengaturan</h2>
       </div>
+
+      <!-- Profil Pengguna -->
+      <section class="glass-panel rounded-2xl p-4 border border-white/10 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="size-13 rounded-full overflow-hidden border-2 border-amber-400/60 bg-amber-500/20 flex items-center justify-center font-bold text-amber-300 text-lg shadow-md">
+            ${profile.avatar ? `<img src="${profile.avatar}" alt="${profile.username}" class="size-full object-cover" />` : (profile.username || 'A')[0].toUpperCase()}
+          </div>
+          <div class="flex flex-col">
+            <h4 class="font-serif text-base font-bold text-white">${escapeHtml(profile.username || 'Alif')}</h4>
+            <span class="text-xs text-slate-400">Tersinkron dengan Kunci Diary Anda</span>
+          </div>
+        </div>
+        <button type="button" id="btn-edit-profile-settings"
+          class="rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold text-white hover:bg-white/10 cursor-pointer transition">
+          ✏️ Ubah Profil
+        </button>
+      </section>
 
       <!-- 0. Status Instalasi PWA -->
       ${standaloneActive ? `
@@ -287,6 +306,7 @@ export async function renderSettingsView(container) {
   `;
 
   // Attach Handlers
+  container.querySelector('#btn-edit-profile-settings')?.addEventListener('click', openProfileModal);
   setupInstallHandlers(container);
   setupUserKeyHandlers(container);
   setupApiHandlers(container);

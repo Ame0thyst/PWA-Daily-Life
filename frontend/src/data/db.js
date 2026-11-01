@@ -47,6 +47,25 @@ export async function getSettings() {
 }
 
 /**
+ * User Profile helpers (Username & Avatar)
+ */
+export async function getUserProfile() {
+  const username = (await getSetting('user_profile_name')) || 'Alif';
+  const avatar = (await getSetting('user_profile_avatar')) || '';
+  return { username, avatar };
+}
+
+export async function setUserProfile(profile = {}) {
+  if (profile.username !== undefined) {
+    await setSetting('user_profile_name', profile.username);
+  }
+  if (profile.avatar !== undefined) {
+    await setSetting('user_profile_avatar', profile.avatar);
+  }
+  window.dispatchEvent(new CustomEvent('profile-updated', { detail: profile }));
+}
+
+/**
  * Entries helpers
  */
 export async function getAllEntries() {

@@ -1,8 +1,8 @@
 /**
- * main.js — Application entrypoint, Liquid Transitions, Opening Screen, and Hash Router
+ * main.js — Application entrypoint, Desktop Sidebar, Aurora Active Tabs, Profile & Routing
  */
 import './styles/app.css';
-import { getSetting } from './data/db.js';
+import { getSetting, setSetting, getUserProfile } from './data/db.js';
 import { checkAndShowLock, initAutoLock, isLocked } from './lock/autolock.js';
 import { initSyncPill } from './components/syncPill.js';
 import { flushQueue } from './data/sync.js';
@@ -10,6 +10,8 @@ import { hasUserKey } from './data/key.js';
 import { renderOnboardingModal } from './components/onboarding.js';
 import { checkAndProcessInviteLink } from './components/invite.js';
 import { showSplashScreen } from './components/splash.js';
+import { openProfileModal } from './components/profileModal.js';
+import { showToast } from './components/toast.js';
 import './pwa.js';
 
 // Views
@@ -20,8 +22,6 @@ import { renderAnalyticsView } from './views/analytics.js';
 import { renderSettingsView } from './views/settings.js';
 
 const mainContent = document.getElementById('main-content');
-const headerTitle = document.getElementById('header-title');
-const headerSubtitle = document.getElementById('header-subtitle');
 
 const TAB_INDICES = {
   write: 0,
@@ -30,57 +30,74 @@ const TAB_INDICES = {
   settings: 3,
 };
 
-const HEADER_META = {
-  write: {
-    title: 'Daily Journal',
-    subtitle: 'Ruang Cerita Pribadi',
-  },
-  timeline: {
-    title: 'Timeline',
-    subtitle: 'Koleksi Momen & Kenangan',
-  },
-  analytics: {
-    title: 'Analitik Jurnal',
-    subtitle: 'Pola Suasana Hati & Statistik',
-  },
-  settings: {
-    title: 'Pengaturan',
-    subtitle: 'Privasi, Sinkronisasi & Akun',
-  },
-};
-
 let currentTabIndex = 0;
 let isNavigating = false;
 
 async function initTheme() {
   const theme = await getSetting('theme');
-  if (theme === 'dark') {
-    document.documentElement.setAttribute('data-theme', 'dark');
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
   } else {
     document.documentElement.removeAttribute('data-theme');
+  }
+}
+
+async function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  await setSetting('theme', next);
+  if (next === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    showToast('Tema Light Cream aktif', 'info');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    showToast('Tema Midnight Space aktif', 'info');
   }
 }
 
 function updateNavigation(activeTab) {
   document.querySelectorAll('.nav-tab').forEach((tab) => {
     const tabName = tab.dataset.tab;
-    const icon = tab.querySelector('svg');
-    const label = tab.querySelector('span');
-
     if (tabName === activeTab) {
       tab.setAttribute('aria-current', 'page');
-      tab.classList.add('bg-accent-soft/80', 'text-accent', 'font-semibold', 'shadow-2xs');
-      tab.classList.remove('text-ink-muted');
-      if (icon) icon.classList.add('scale-110');
-      if (label) label.classList.add('font-semibold');
+      tab.classList.add('nav-tab-aurora');
+      tab.classList.remove('text-slate-400');
     } else {
       tab.removeAttribute('aria-current');
-      tab.classList.remove('bg-accent-soft/80', 'text-accent', 'font-semibold', 'shadow-2xs');
-      tab.classList.add('text-ink-muted');
-      if (icon) icon.classList.remove('scale-110');
-      if (label) label.classList.remove('font-semibold');
+      tab.classList.remove('nav-tab-aurora');
+      tab.classList.add('text-slate-400');
     }
   });
+}
+
+async function updateProfileUI() {
+  const profile = await getUserProfile();
+  const username = profile.username || 'Alif';
+  const initial = username[0].toUpperCase();
+
+  // Header Avatar
+  const headerCircle = document.getElementById('header-avatar-circle');
+  const headerUsername = document.getElementById('header-username-badge');
+  if (headerCircle) {
+    if (profile.avatar) {
+      headerCircle.innerHTML = `<img src="${profile.avatar}" alt="${username}" class="size-full object-cover" />`;
+    } else {
+      headerCircle.textContent = initial;
+    }
+  }
+  if (headerUsername) headerUsername.textContent = username;
+
+  // Sidebar Avatar
+  const sidebarCircle = document.getElementById('sidebar-avatar-img-box');
+  const sidebarUsername = document.getElementById('sidebar-username-text');
+  if (sidebarCircle) {
+    if (profile.avatar) {
+      sidebarCircle.innerHTML = `<img src="${profile.avatar}" alt="${username}" class="size-full object-cover" />`;
+    } else {
+      sidebarCircle.textContent = initial;
+    }
+  }
+  if (sidebarUsername) sidebarUsername.textContent = username;
 }
 
 async function handleRouting() {
@@ -102,7 +119,7 @@ async function handleRouting() {
 
   const targetIndex = isDetail ? 99 : (TAB_INDICES[targetTab] ?? 0);
 
-  // Liquid direction determination
+  // Directional Liquid Transitions
   let exitClass = 'view-liquid-exit-fade';
   let enterClass = 'view-liquid-fade';
 
@@ -119,28 +136,17 @@ async function handleRouting() {
     enterClass = 'view-liquid-right';
   }
 
-  // Update header text smoothly
-  const headerMeta = HEADER_META[targetTab] || {
-    title: isDetail ? 'Detail Catatan' : 'Daily Journal',
-    subtitle: isDetail ? 'Melihat & mengubah entri' : 'Ruang Cerita Pribadi',
-  };
-
-  if (headerTitle) headerTitle.textContent = headerMeta.title;
-  if (headerSubtitle) headerSubtitle.textContent = headerMeta.subtitle;
-
   updateNavigation(targetTab);
 
   isNavigating = true;
 
   try {
-    // 1. Fluid liquid exit on existing content (eliminates the blink)
     if (mainContent && mainContent.firstElementChild) {
       mainContent.classList.remove('view-liquid-right', 'view-liquid-left', 'view-liquid-fade');
       mainContent.classList.add(exitClass);
-      await new Promise((r) => setTimeout(r, 150));
+      await new Promise((r) => setTimeout(r, 140));
     }
 
-    // 2. Render new view content
     if (isDetail) {
       await renderDetailView(mainContent, detailId);
     } else {
@@ -162,7 +168,6 @@ async function handleRouting() {
       currentTabIndex = targetIndex;
     }
 
-    // 3. Fluid liquid enter animation
     mainContent.classList.remove('view-liquid-exit-left', 'view-liquid-exit-right', 'view-liquid-exit-fade');
     mainContent.classList.add(enterClass);
 
@@ -170,7 +175,7 @@ async function handleRouting() {
 
     setTimeout(() => {
       mainContent.classList.remove(enterClass);
-    }, 350);
+    }, 320);
   } finally {
     isNavigating = false;
   }
@@ -182,8 +187,6 @@ function registerServiceWorker() {
       navigator.serviceWorker
         .register('./sw.js')
         .then((reg) => {
-          console.debug('Service Worker registered:', reg.scope);
-
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
             if (newWorker) {
@@ -237,6 +240,28 @@ async function initApp() {
   await initTheme();
   initSyncPill();
   registerServiceWorker();
+  await updateProfileUI();
+
+  // Profile modal click handlers
+  document.getElementById('btn-header-profile')?.addEventListener('click', openProfileModal);
+  document.getElementById('sidebar-user-capsule')?.addEventListener('click', openProfileModal);
+
+  // Theme button
+  document.getElementById('btn-header-theme')?.addEventListener('click', toggleTheme);
+
+  // Notification button
+  document.getElementById('btn-header-notif')?.addEventListener('click', () => {
+    showToast('Semua catatan tersimpan rapi & terenkripsi lokal.', 'info');
+  });
+
+  // Listen for profile changes
+  window.addEventListener('profile-updated', () => {
+    updateProfileUI();
+    const hash = window.location.hash || '#/write';
+    if (hash === '#/write' || hash === '' || hash === '#/') {
+      renderWriteView(mainContent);
+    }
+  });
 
   await checkAndProcessInviteLink();
 
@@ -255,14 +280,11 @@ async function initApp() {
   }
 }
 
-// Startup Sequence with Splash / Opening Screen
+// Startup Sequence with Splash Screen
 async function boot() {
   await initTheme();
-
-  // Show splash opening screen first
   await showSplashScreen('splash-screen', 1300);
 
-  // Then check lock state
   checkAndShowLock(() => {
     initApp();
     initAutoLock(() => {

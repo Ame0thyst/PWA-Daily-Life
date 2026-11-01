@@ -3,91 +3,169 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="description" content="Daily Journal — jurnal harian pribadi offline-first dengan analitik mood dan enkripsi multi-user" />
-  <meta name="theme-color" content="#FAF6EE" />
+  <meta name="description" content="Daily Journal — Ruang Cerita Pribadi offline-first dengan analitik mood dan multi-user" />
+  <meta name="theme-color" content="#080B12" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Daily Journal" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <title>Daily Journal</title>
+  <title>Daily Journal — Ruang Cerita Pribadi</title>
   <link rel="stylesheet" href="/src/styles/app.css" />
 </head>
-<body class="min-h-dvh bg-cream font-sans text-[15px] text-ink antialiased selection:bg-accent/20 selection:text-ink">
+<body class="font-sans text-[15px] antialiased selection:bg-orange-500/30 selection:text-white">
 
   <!-- 1. Opening / Splash Screen -->
-  <div id="splash-screen" class="fixed inset-0 z-60 flex items-center justify-center bg-cream transition-all"></div>
+  <div id="splash-screen" class="fixed inset-0 z-60 flex items-center justify-center bg-[#080B12] transition-all"></div>
 
   <!-- 2. Lock Screen (PIN & Biometric) -->
-  <div id="lock-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-cream hidden"></div>
+  <div id="lock-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#080B12] hidden"></div>
 
-  <!-- 3. App Shell -->
-  <div id="app" class="hidden min-h-dvh flex flex-col">
-    <!-- Header -->
-    <header id="app-header"
-      class="sticky top-0 z-20 flex items-center justify-between border-b border-line/60 bg-paper/85 px-4 py-2.5 backdrop-blur-xl
-             pt-[env(safe-area-inset-top)] transition-all duration-300">
-      <div class="flex items-center gap-2.5">
-        <div class="size-8.5 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
-          <img src="icons/icon-192.png" alt="Daily Journal" class="size-full object-cover" />
+  <!-- 3. Main App Container (Desktop Sidebar + Main App Grid) -->
+  <div id="app" class="hidden min-h-screen flex flex-col md:flex-row">
+
+    <!-- DESKTOP / TABLET SIDEBAR -->
+    <aside id="desktop-sidebar"
+      class="hidden md:flex md:w-64 lg:w-72 shrink-0 flex-col justify-between border-r border-white/10 p-6 glass-panel sticky top-0 h-screen select-none">
+      
+      <!-- Logo Branding -->
+      <div class="flex flex-col gap-8">
+        <div class="flex items-center gap-3">
+          <div class="size-11 rounded-2xl bg-gradient-to-br from-amber-200/20 to-purple-500/20 border border-white/20 flex items-center justify-center shadow-lg shadow-purple-500/10">
+            <span class="font-serif text-2xl font-black text-white italic drop-shadow-sm">D</span>
+          </div>
+          <div class="flex flex-col">
+            <h1 class="font-serif text-lg font-bold text-white tracking-tight leading-tight">Daily Journal</h1>
+            <span class="text-xs text-slate-400 font-sans">Ruang Cerita Pribadi</span>
+          </div>
         </div>
-        <div class="flex flex-col">
-          <h1 id="header-title" class="text-[17px] font-bold font-serif text-ink leading-tight tracking-tight">Daily Journal</h1>
-          <span id="header-subtitle" class="text-[11px] text-ink-muted leading-tight font-sans">Ruang Cerita Pribadi</span>
-        </div>
+
+        <!-- Sidebar Navigation Links -->
+        <nav class="flex flex-col gap-2">
+          <a href="#/write" data-tab="write"
+            class="nav-tab flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm text-slate-300 transition-all cursor-pointer">
+            <span class="text-lg">✍️</span>
+            <span class="font-medium">Tulis</span>
+          </a>
+          <a href="#/timeline" data-tab="timeline"
+            class="nav-tab flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm text-slate-300 transition-all cursor-pointer">
+            <span class="text-lg">📅</span>
+            <span class="font-medium">Timeline</span>
+          </a>
+          <a href="#/analytics" data-tab="analytics"
+            class="nav-tab flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm text-slate-300 transition-all cursor-pointer">
+            <span class="text-lg">📊</span>
+            <span class="font-medium">Analitik</span>
+          </a>
+          <a href="#/settings" data-tab="settings"
+            class="nav-tab flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm text-slate-300 transition-all cursor-pointer">
+            <span class="text-lg">⚙️</span>
+            <span class="font-medium">Pengaturan</span>
+          </a>
+        </nav>
       </div>
-      <div id="sync-pill-container" class="shrink-0"></div>
-    </header>
 
-    <!-- Main Content Container with liquid transition wrapper -->
-    <main id="main-content"
-      class="mx-auto w-full max-w-[680px] flex-1 px-4 pb-28 pt-4 md:pb-12 md:pl-28 transition-all">
-    </main>
+      <!-- Sidebar User Profile Capsule at bottom -->
+      <div id="sidebar-user-capsule" class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] p-3 cursor-pointer hover:bg-white/[0.08] transition">
+        <div class="flex items-center gap-2.5">
+          <div id="sidebar-avatar-img-box" class="size-9 rounded-full overflow-hidden border border-amber-400/50 bg-amber-500/20 flex items-center justify-center font-bold text-amber-300 text-sm">
+            A
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span id="sidebar-username-text" class="text-xs font-semibold text-white truncate max-w-[120px]">Alif</span>
+            <span class="text-[10px] text-slate-400">Ketuk untuk profil</span>
+          </div>
+        </div>
+        <span class="text-slate-400 text-xs">✏️</span>
+      </div>
+    </aside>
 
-    <!-- Modern Bottom Navigation Dock -->
+    <!-- MAIN CONTENT AREA & TOP HEADER -->
+    <div class="flex-1 flex flex-col min-h-screen">
+      <!-- Top Header Bar -->
+      <header id="app-header"
+        class="sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-[#080B12]/80 px-4 sm:px-8 py-3.5 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+        
+        <!-- Mobile Logo (Visible only on mobile) -->
+        <div class="flex items-center gap-2.5 md:hidden">
+          <div class="size-8 rounded-xl bg-gradient-to-br from-amber-200/20 to-purple-500/20 border border-white/20 flex items-center justify-center">
+            <span class="font-serif text-base font-black text-white italic">D</span>
+          </div>
+          <span class="font-serif font-bold text-white text-base">Daily Journal</span>
+        </div>
+
+        <!-- Desktop empty placeholder for flex alignment -->
+        <div class="hidden md:block"></div>
+
+        <!-- Top Right Actions: Sync, Notif, Theme, User Avatar -->
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <!-- Sync Pill -->
+          <div id="sync-pill-container"></div>
+
+          <!-- Notifikasi Button -->
+          <button type="button" id="btn-header-notif" title="Notifikasi Jurnal"
+            class="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/[0.1] hover:text-white transition cursor-pointer">
+            <span>🔔</span> <span>Notifikasi</span>
+          </button>
+
+          <!-- Tema Button -->
+          <button type="button" id="btn-header-theme" title="Ganti Tema Tampilan"
+            class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/[0.1] hover:text-white transition cursor-pointer">
+            <span>🎨</span> <span class="hidden sm:inline">Tema</span>
+          </button>
+
+          <!-- Profile Avatar Button -->
+          <button type="button" id="btn-header-profile" title="Profil Pengguna"
+            class="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.06] p-1 pr-2 sm:pr-2.5 hover:border-amber-400/60 transition cursor-pointer active:scale-95">
+            <div id="header-avatar-circle"
+              class="size-7 sm:size-7.5 rounded-full overflow-hidden border border-amber-400/60 bg-amber-500/20 flex items-center justify-center font-bold text-amber-300 text-xs">
+              A
+            </div>
+            <span id="header-username-badge" class="text-xs font-semibold text-white max-w-[70px] truncate hidden sm:inline">Alif</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content Container with liquid transition wrapper -->
+      <main id="main-content"
+        class="mx-auto w-full max-w-4xl flex-1 px-4 sm:px-8 pb-28 pt-6 md:pb-12 transition-all">
+      </main>
+    </div>
+
+    <!-- MOBILE FLOATING BOTTOM NAVIGATION DOCK (Hidden on md and above) -->
     <nav id="bottom-nav"
-      class="fixed inset-x-0 bottom-0 z-30 border-t border-line/60 bg-paper/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl shadow-lg
-             md:inset-x-auto md:inset-y-0 md:left-0 md:w-22 md:border-t-0 md:border-r md:pb-0">
-      <ul class="flex justify-around items-center px-2 py-1 md:h-full md:flex-col md:items-center md:justify-start md:gap-3 md:pt-8 md:px-0">
+      class="md:hidden fixed inset-x-3 bottom-3 z-30 rounded-3xl border border-white/15 bg-[#121622]/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl shadow-2xl">
+      <ul class="flex justify-around items-center px-2 py-1.5">
         <li>
           <a href="#/write" data-tab="write"
-            class="nav-tab relative flex min-h-13 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5
-                   text-xs text-ink-muted transition-all duration-200 cursor-pointer active:scale-92">
-            <svg class="size-5.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-            </svg>
+            class="nav-tab flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1
+                   text-xs text-slate-400 transition-all cursor-pointer active:scale-90">
+            <span class="text-lg">✍️</span>
             <span class="text-[11px] font-medium leading-none">Tulis</span>
           </a>
         </li>
         <li>
           <a href="#/timeline" data-tab="timeline"
-            class="nav-tab relative flex min-h-13 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5
-                   text-xs text-ink-muted transition-all duration-200 cursor-pointer active:scale-92">
-            <svg class="size-5.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
+            class="nav-tab flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1
+                   text-xs text-slate-400 transition-all cursor-pointer active:scale-90">
+            <span class="text-lg">📅</span>
             <span class="text-[11px] font-medium leading-none">Timeline</span>
           </a>
         </li>
         <li>
           <a href="#/analytics" data-tab="analytics"
-            class="nav-tab relative flex min-h-13 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5
-                   text-xs text-ink-muted transition-all duration-200 cursor-pointer active:scale-92">
-            <svg class="size-5.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-            </svg>
+            class="nav-tab flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1
+                   text-xs text-slate-400 transition-all cursor-pointer active:scale-90">
+            <span class="text-lg">📊</span>
             <span class="text-[11px] font-medium leading-none">Analitik</span>
           </a>
         </li>
         <li>
           <a href="#/settings" data-tab="settings"
-            class="nav-tab relative flex min-h-13 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5
-                   text-xs text-ink-muted transition-all duration-200 cursor-pointer active:scale-92">
-            <svg class="size-5.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+            class="nav-tab flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1
+                   text-xs text-slate-400 transition-all cursor-pointer active:scale-90">
+            <span class="text-lg">⚙️</span>
             <span class="text-[11px] font-medium leading-none">Pengaturan</span>
           </a>
         </li>
