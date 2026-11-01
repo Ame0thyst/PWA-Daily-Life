@@ -29,7 +29,7 @@ export async function renderWriteView(container) {
   const dateFormatted = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
 
   container.innerHTML = `
-    <div class="flex flex-col gap-5 pb-24 max-w-xl mx-auto">
+    <div class="flex flex-col gap-5 pb-32 max-w-xl mx-auto">
       <!-- 1. Top Greeting & Date Pill Row -->
       <div class="flex items-center justify-between pt-1">
         <div class="flex flex-col">

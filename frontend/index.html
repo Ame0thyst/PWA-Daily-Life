@@ -25,52 +25,51 @@
   <!-- 3. Main App Container -->
   <div id="app" class="hidden min-h-screen flex flex-col">
 
-    <!-- Top Header Bar -->
+    <!-- Top Header Bar (Spacious & Streamlined on Mobile) -->
     <header id="app-header"
-      class="sticky top-0 z-20 flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.08] bg-[#F4F5F8]/90 dark:bg-[#0F1115]/90 px-4 sm:px-8 py-3.5 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+      class="sticky top-0 z-40 flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.08] bg-[#F4F5F8]/90 dark:bg-[#0F1115]/90 px-4 sm:px-8 py-2.5 sm:py-3.5 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
       
-      <!-- App Brand Logo & Title -->
-      <div class="flex items-center gap-2.5">
-        <div class="size-8.5 rounded-xl bg-[#181B20] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+      <!-- App Brand Logo (Icon on mobile, text on desktop) -->
+      <a href="#/write" class="flex items-center gap-2.5 group cursor-pointer" title="Daily Journal">
+        <div class="size-8.5 rounded-xl bg-[#181B20] text-white flex items-center justify-center font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
           D
         </div>
-        <div class="flex flex-col">
+        <div class="hidden sm:flex flex-col">
           <span class="font-bold text-sm tracking-tight text-gray-900 dark:text-white leading-tight">Daily Journal</span>
           <span class="text-[10px] text-gray-400 font-medium">Ruang Cerita Pribadi</span>
         </div>
-      </div>
+      </a>
 
-      <!-- Right Header Actions: Sync, Theme, Profile -->
-      <div class="flex items-center gap-2.5">
-        <!-- Sync Pill -->
+      <!-- Right Header Actions: Compact Glowing Pip, Theme, Profile Avatar -->
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <!-- Minimal Glowing Sync Pip -->
         <div id="sync-pill-container"></div>
 
         <!-- Theme Toggle -->
         <button type="button" id="btn-header-theme" title="Ganti Tema"
-          class="size-9 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] dark:border-white/[0.08] shadow-2xs flex items-center justify-center text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all cursor-pointer">
+          class="size-8 sm:size-8.5 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] dark:border-white/[0.08] shadow-2xs flex items-center justify-center text-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-90 transition-all cursor-pointer">
           🎨
         </button>
 
-        <!-- User Profile Avatar Pill -->
+        <!-- User Profile Avatar (Compact Icon-Only on Mobile) -->
         <button type="button" id="btn-header-profile" title="Profil Pengguna"
-          class="flex items-center gap-2 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] dark:border-white/[0.08] p-1 pr-2.5 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer">
+          class="size-8 sm:size-8.5 rounded-full overflow-hidden border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#171A21] shadow-2xs flex items-center justify-center hover:opacity-90 active:scale-90 transition-all cursor-pointer">
           <div id="header-avatar-circle"
-            class="size-7 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-bold text-xs text-gray-800 dark:text-white">
+            class="size-full flex items-center justify-center font-bold text-xs text-gray-800 dark:text-white">
             V
           </div>
-          <span id="header-username-badge" class="text-xs font-semibold text-gray-800 dark:text-white max-w-[80px] truncate">Vanessa</span>
         </button>
       </div>
     </header>
 
-    <!-- Main Content Container with liquid transition wrapper -->
+    <!-- Main Content Container with generous bottom spacing for sticky dock -->
     <main id="main-content"
-      class="mx-auto w-full max-w-2xl flex-1 px-4 sm:px-6 pt-5 pb-28 transition-all">
+      class="mx-auto w-full max-w-2xl flex-1 px-4 sm:px-6 pt-4 pb-36 transition-all">
     </main>
 
-    <!-- FLOATING OBSIDIAN BOTTOM NAVIGATION DOCK (TripGlide-Style) -->
+    <!-- FLOATING OBSIDIAN BOTTOM NAVIGATION DOCK (Always Sticky / Fixed) -->
     <nav id="bottom-nav"
-      class="fixed bottom-5 inset-x-0 mx-auto max-w-[280px] z-40 nav-dock-obsidian p-1.5 flex items-center justify-between">
+      class="nav-dock-obsidian p-1.5 flex items-center justify-between">
       
       <!-- Tab 1: Write (Home/Tulis) -->
       <a href="#/write" data-tab="write" title="Tulis Jurnal"

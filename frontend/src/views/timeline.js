@@ -13,7 +13,7 @@ let searchQuery = '';
 
 export async function renderTimelineView(container) {
   container.innerHTML = `
-    <div class="flex flex-col gap-5 pb-24 max-w-xl mx-auto">
+    <div class="flex flex-col gap-5 pb-32 max-w-xl mx-auto">
       <!-- Top Title -->
       <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Timeline Catatan</h2>

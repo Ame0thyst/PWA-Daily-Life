@@ -13,7 +13,7 @@ let currentPeriodDays = 30; // 30, 90, 365
 
 export async function renderAnalyticsView(container) {
   container.innerHTML = `
-    <div class="flex flex-col gap-5 pb-24 max-w-xl mx-auto">
+    <div class="flex flex-col gap-5 pb-32 max-w-xl mx-auto">
       <!-- Header with Time Filter -->
       <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
         <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Analitik Jurnal</h2>

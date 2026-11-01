@@ -30,7 +30,7 @@ export async function renderSettingsView(container) {
   const failedItems = queueItems.filter((q) => q.status === 'failed');
 
   container.innerHTML = `
-    <div class="flex flex-col gap-5 pb-24 max-w-xl mx-auto">
+    <div class="flex flex-col gap-5 pb-32 max-w-xl mx-auto">
       <div class="flex items-center justify-between pt-1">
         <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Pengaturan</h2>
       </div>

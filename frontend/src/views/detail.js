@@ -42,7 +42,7 @@ export async function renderDetailView(container, entryId) {
     : null;
 
   container.innerHTML = `
-    <div class="flex flex-col pb-28 max-w-xl mx-auto">
+    <div class="flex flex-col pb-32 max-w-xl mx-auto">
       
       <!-- Top Floating Navigation Bar -->
       <div class="flex items-center justify-between py-2 mb-2">
