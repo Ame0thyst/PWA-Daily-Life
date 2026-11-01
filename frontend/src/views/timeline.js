@@ -13,7 +13,7 @@ let searchQuery = '';
 
 export async function renderTimelineView(container) {
   container.innerHTML = `
-    <div class="view-enter flex flex-col gap-4 pb-8">
+    <div class="flex flex-col gap-4 pb-8">
       <!-- Search and Filter Bar -->
       <div class="flex flex-col gap-2.5">
         <div class="relative">

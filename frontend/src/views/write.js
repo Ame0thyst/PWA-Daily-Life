@@ -1,11 +1,12 @@
 /**
- * write.js — Main journal writing view
+ * write.js — Main journal writing view with liquid design & dynamic greeting
  * Features:
- * - 5-level mood picker
+ * - 5-level interactive mood picker with liquid glow
+ * - Dynamic time-of-day greeting & calendar badge
  * - Live tag detection (#hashtag, @mention)
  * - Auto-save draft every 2s
  * - Photo attachment with client-side dual-image processing (HD + thumb)
- * - Word counter
+ * - Word counter & tactile save button
  * - Offline-first instant save to IndexedDB + queue
  */
 import { renderMoodPicker } from '../components/moodPicker.js';
@@ -26,34 +27,59 @@ export async function renderWriteView(container) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
   const dateFormatted = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
 
+  // Dynamic greeting based on current hour
+  const hour = now.getHours();
+  let greetingText = 'Selamat Pagi 🌅';
+  let greetingSubtitle = 'Awali hari dengan mencatat pikiran & harapanmu.';
+
+  if (hour >= 11 && hour < 15) {
+    greetingText = 'Selamat Siang ☀️';
+    greetingSubtitle = 'Bagaimana perjalanan harimu sejauh ini?';
+  } else if (hour >= 15 && hour < 18) {
+    greetingText = 'Selamat Sore ☕';
+    greetingSubtitle = 'Rehat sejenak dan tuangkan momen berhargamu.';
+  } else if (hour >= 18 || hour < 4) {
+    greetingText = 'Selamat Malam 🌙';
+    greetingSubtitle = 'Refleksikan harimu sebelum beristirahat tenang.';
+  }
+
   container.innerHTML = `
-    <div class="view-enter flex flex-col gap-5 pb-6">
-      <!-- Date Banner -->
-      <div class="flex items-center justify-between border-b pb-2">
-        <h2 class="font-serif text-xl font-bold text-ink">${dateFormatted}</h2>
-        <span id="draft-status" class="text-xs text-ink-muted"></span>
+    <div class="flex flex-col gap-5 pb-8">
+      <!-- Greeting & Date Header -->
+      <div class="flex flex-col gap-1.5 border-b border-line/60 pb-3">
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-accent/10 border border-accent/25 px-3 py-0.5 text-xs font-semibold text-accent shadow-2xs">
+            <span>📅</span> ${dateFormatted}
+          </span>
+          <span id="draft-status" class="text-xs text-ink-muted/80 italic font-mono transition-opacity duration-300"></span>
+        </div>
+        <h2 class="font-serif text-2xl font-bold tracking-tight text-ink mt-1">${greetingText}</h2>
+        <p class="text-xs text-ink-muted">${greetingSubtitle}</p>
       </div>
 
       <!-- Mood Section -->
       <div class="flex flex-col gap-2">
-        <label class="text-xs font-medium uppercase tracking-wider text-ink-muted">Bagaimana harimu?</label>
+        <label class="text-xs font-semibold uppercase tracking-wider text-ink-muted flex items-center justify-between">
+          <span>Bagaimana perasaanmu?</span>
+          <span class="text-[11px] text-accent font-normal font-sans">Wajib dipilih</span>
+        </label>
         <div id="write-mood-picker"></div>
       </div>
 
       <!-- Editor Section -->
       <div class="flex flex-col gap-2">
-        <div class="relative rounded-card border bg-paper p-3 shadow-card focus-within:border-accent focus-within:ring-1 focus-within:ring-accent">
+        <div class="relative rounded-2xl border border-line/80 bg-paper p-4 shadow-sm transition-all duration-200 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 focus-within:shadow-md">
           <textarea id="entry-textarea"
-            placeholder="Tulis sesuatu... Gunakan #topik atau @orang"
+            placeholder="Tuliskan ceritamu hari ini... Gunakan #topik untuk mengelompokkan atau @nama untuk menandai seseorang."
             rows="8"
-            class="w-full resize-none bg-transparent font-serif text-[17px] leading-[1.7] text-ink placeholder:font-sans placeholder:text-sm placeholder:text-ink-muted/60 focus:outline-hidden"></textarea>
+            class="w-full resize-none bg-transparent font-serif text-[17px] leading-[1.75] text-ink placeholder:font-sans placeholder:text-sm placeholder:text-ink-muted/50 focus:outline-hidden"></textarea>
 
           <!-- Photo preview inside editor if attached -->
           <div id="photo-preview-box" class="hidden mt-3 relative inline-block">
-            <div class="relative size-24 overflow-hidden rounded-field border bg-sand/40">
+            <div class="relative size-24 overflow-hidden rounded-xl border border-line shadow-xs bg-sand/30">
               <img id="photo-preview-img" src="" alt="Pratinjau Foto" class="size-full object-cover" />
               <button type="button" id="btn-remove-photo" aria-label="Hapus foto"
-                class="absolute top-1 right-1 flex size-6 items-center justify-center rounded-full bg-ink/75 text-cream transition hover:bg-danger">
+                class="absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-ink/80 text-cream transition hover:bg-danger hover:scale-110 shadow-xs cursor-pointer">
                 <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -65,16 +91,16 @@ export async function renderWriteView(container) {
         <!-- Meta info: Tags and word count -->
         <div class="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-ink-muted">
           <div id="tag-chips-container" class="flex flex-wrap gap-1.5 min-h-6"></div>
-          <span id="word-count" class="shrink-0 font-medium">0 kata</span>
+          <span id="word-count" class="shrink-0 font-medium font-mono text-[11px] text-ink-muted bg-sand/40 px-2 py-0.5 rounded-md">0 kata</span>
         </div>
       </div>
 
       <!-- Bottom Actions -->
-      <div class="flex items-center justify-between pt-2">
+      <div class="flex items-center justify-between pt-1">
         <div>
           <input type="file" id="photo-file-input" accept="image/*" class="hidden" />
           <button type="button" id="btn-attach-photo"
-            class="inline-flex min-h-11 items-center gap-2 rounded-field border bg-paper px-4 py-2 text-sm font-medium text-ink transition hover:bg-sand focus-visible:outline-2 focus-visible:outline-accent cursor-pointer">
+            class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line/80 bg-paper px-4 py-2 text-sm font-medium text-ink transition-all hover:bg-sand/60 hover:border-line active:scale-95 shadow-2xs focus-visible:outline-2 focus-visible:outline-accent cursor-pointer">
             <svg class="size-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
@@ -84,8 +110,11 @@ export async function renderWriteView(container) {
         </div>
 
         <button type="button" id="btn-save-entry" disabled
-          class="inline-flex min-h-11 items-center justify-center rounded-field bg-accent px-6 py-2 text-sm font-semibold text-cream transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent cursor-pointer">
-          Simpan
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent to-accent-dark px-7 py-2.5 text-sm font-semibold text-cream shadow-md shadow-accent/20 transition-all hover:shadow-lg hover:shadow-accent/30 active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent cursor-pointer">
+          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+          <span>Simpan</span>
         </button>
       </div>
     </div>
@@ -102,6 +131,12 @@ export async function renderWriteView(container) {
   const photoPreviewImg = document.getElementById('photo-preview-img');
   const removePhotoBtn = document.getElementById('btn-remove-photo');
   const draftStatus = document.getElementById('draft-status');
+
+  // Guard against broken images
+  photoPreviewImg.addEventListener('error', () => {
+    photoPreviewBox.classList.add('hidden');
+    currentImageData = null;
+  });
 
   // Init mood picker
   const moodPicker = renderMoodPicker('write-mood-picker', null, (level) => {
@@ -125,7 +160,7 @@ export async function renderWriteView(container) {
     tagChips.innerHTML = tags
       .map(
         (t) =>
-          `<span class="inline-flex items-center rounded-full bg-sand px-2 py-0.5 text-[11px] font-medium text-ink">${t}</span>`
+          `<span class="inline-flex items-center rounded-full bg-sand/70 border border-line/60 px-2.5 py-0.5 text-[11px] font-medium text-ink shadow-2xs">${t}</span>`
       )
       .join('');
 
@@ -159,7 +194,7 @@ export async function renderWriteView(container) {
     }, 2000);
   }
 
-  // Restore existing draft
+  // Restore existing draft safely
   const savedDraft = await draftStore.getItem('currentDraft');
   if (savedDraft) {
     if (savedDraft.text) textarea.value = savedDraft.text;
@@ -167,7 +202,7 @@ export async function renderWriteView(container) {
       currentMood = savedDraft.mood;
       moodPicker.setValue(savedDraft.mood);
     }
-    if (savedDraft.thumb) {
+    if (savedDraft.thumb && typeof savedDraft.thumb === 'string' && savedDraft.thumb.trim().length > 30) {
       currentImageData = {
         imageHD: savedDraft.imageHD,
         thumb: savedDraft.thumb,
@@ -284,7 +319,7 @@ export async function renderWriteView(container) {
 
       // Show toast
       if (navigator.onLine) {
-        showToast('Tersimpan di perangkat', 'success');
+        showToast('Tersimpan di perangkat & antrean sinkron', 'success');
       } else {
         showToast('Disimpan di perangkat (offline)', 'info');
       }

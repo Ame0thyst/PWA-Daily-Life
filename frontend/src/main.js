@@ -1,5 +1,5 @@
 /**
- * main.js — Application entrypoint and Hash Router
+ * main.js — Application entrypoint, Liquid Transitions, Opening Screen, and Hash Router
  */
 import './styles/app.css';
 import { getSetting } from './data/db.js';
@@ -9,6 +9,7 @@ import { flushQueue } from './data/sync.js';
 import { hasUserKey } from './data/key.js';
 import { renderOnboardingModal } from './components/onboarding.js';
 import { checkAndProcessInviteLink } from './components/invite.js';
+import { showSplashScreen } from './components/splash.js';
 import './pwa.js';
 
 // Views
@@ -20,13 +21,36 @@ import { renderSettingsView } from './views/settings.js';
 
 const mainContent = document.getElementById('main-content');
 const headerTitle = document.getElementById('header-title');
+const headerSubtitle = document.getElementById('header-subtitle');
 
-const TITLES = {
-  write: 'Daily Journal',
-  timeline: 'Timeline',
-  analytics: 'Analitik Jurnal',
-  settings: 'Pengaturan',
+const TAB_INDICES = {
+  write: 0,
+  timeline: 1,
+  analytics: 2,
+  settings: 3,
 };
+
+const HEADER_META = {
+  write: {
+    title: 'Daily Journal',
+    subtitle: 'Ruang Cerita Pribadi',
+  },
+  timeline: {
+    title: 'Timeline',
+    subtitle: 'Koleksi Momen & Kenangan',
+  },
+  analytics: {
+    title: 'Analitik Jurnal',
+    subtitle: 'Pola Suasana Hati & Statistik',
+  },
+  settings: {
+    title: 'Pengaturan',
+    subtitle: 'Privasi, Sinkronisasi & Akun',
+  },
+};
+
+let currentTabIndex = 0;
+let isNavigating = false;
 
 async function initTheme() {
   const theme = await getSetting('theme');
@@ -40,58 +64,116 @@ async function initTheme() {
 function updateNavigation(activeTab) {
   document.querySelectorAll('.nav-tab').forEach((tab) => {
     const tabName = tab.dataset.tab;
+    const icon = tab.querySelector('svg');
+    const label = tab.querySelector('span');
+
     if (tabName === activeTab) {
       tab.setAttribute('aria-current', 'page');
-      tab.classList.add('bg-accent-soft', 'text-accent', 'font-medium');
+      tab.classList.add('bg-accent-soft/80', 'text-accent', 'font-semibold', 'shadow-2xs');
       tab.classList.remove('text-ink-muted');
+      if (icon) icon.classList.add('scale-110');
+      if (label) label.classList.add('font-semibold');
     } else {
       tab.removeAttribute('aria-current');
-      tab.classList.remove('bg-accent-soft', 'text-accent', 'font-medium');
+      tab.classList.remove('bg-accent-soft/80', 'text-accent', 'font-semibold', 'shadow-2xs');
       tab.classList.add('text-ink-muted');
+      if (icon) icon.classList.remove('scale-110');
+      if (label) label.classList.remove('font-semibold');
     }
   });
 }
 
 async function handleRouting() {
-  if (isLocked()) return;
+  if (isLocked() || isNavigating) return;
 
   const hash = window.location.hash || '#/write';
 
+  let targetTab = 'write';
+  let isDetail = false;
+  let detailId = null;
+
   if (hash.startsWith('#/detail/')) {
-    const id = hash.replace('#/detail/', '');
-    if (headerTitle) headerTitle.textContent = 'Detail Catatan';
-    updateNavigation(null);
-    await renderDetailView(mainContent, id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return;
+    isDetail = true;
+    detailId = hash.replace('#/detail/', '');
+    targetTab = null;
+  } else {
+    targetTab = hash.replace('#/', '').split('/')[0] || 'write';
   }
 
-  const route = hash.replace('#/', '') || 'write';
-  const tabName = route.split('/')[0];
+  const targetIndex = isDetail ? 99 : (TAB_INDICES[targetTab] ?? 0);
 
-  if (headerTitle) {
-    headerTitle.textContent = TITLES[tabName] || 'Daily Journal';
+  // Liquid direction determination
+  let exitClass = 'view-liquid-exit-fade';
+  let enterClass = 'view-liquid-fade';
+
+  if (!isDetail && targetTab) {
+    if (targetIndex > currentTabIndex) {
+      exitClass = 'view-liquid-exit-left';
+      enterClass = 'view-liquid-right';
+    } else if (targetIndex < currentTabIndex) {
+      exitClass = 'view-liquid-exit-right';
+      enterClass = 'view-liquid-left';
+    }
+  } else if (isDetail) {
+    exitClass = 'view-liquid-exit-fade';
+    enterClass = 'view-liquid-right';
   }
 
-  updateNavigation(tabName);
+  // Update header text smoothly
+  const headerMeta = HEADER_META[targetTab] || {
+    title: isDetail ? 'Detail Catatan' : 'Daily Journal',
+    subtitle: isDetail ? 'Melihat & mengubah entri' : 'Ruang Cerita Pribadi',
+  };
 
-  switch (tabName) {
-    case 'timeline':
-      await renderTimelineView(mainContent);
-      break;
-    case 'analytics':
-      await renderAnalyticsView(mainContent);
-      break;
-    case 'settings':
-      await renderSettingsView(mainContent);
-      break;
-    case 'write':
-    default:
-      await renderWriteView(mainContent);
-      break;
+  if (headerTitle) headerTitle.textContent = headerMeta.title;
+  if (headerSubtitle) headerSubtitle.textContent = headerMeta.subtitle;
+
+  updateNavigation(targetTab);
+
+  isNavigating = true;
+
+  try {
+    // 1. Fluid liquid exit on existing content (eliminates the blink)
+    if (mainContent && mainContent.firstElementChild) {
+      mainContent.classList.remove('view-liquid-right', 'view-liquid-left', 'view-liquid-fade');
+      mainContent.classList.add(exitClass);
+      await new Promise((r) => setTimeout(r, 150));
+    }
+
+    // 2. Render new view content
+    if (isDetail) {
+      await renderDetailView(mainContent, detailId);
+    } else {
+      switch (targetTab) {
+        case 'timeline':
+          await renderTimelineView(mainContent);
+          break;
+        case 'analytics':
+          await renderAnalyticsView(mainContent);
+          break;
+        case 'settings':
+          await renderSettingsView(mainContent);
+          break;
+        case 'write':
+        default:
+          await renderWriteView(mainContent);
+          break;
+      }
+      currentTabIndex = targetIndex;
+    }
+
+    // 3. Fluid liquid enter animation
+    mainContent.classList.remove('view-liquid-exit-left', 'view-liquid-exit-right', 'view-liquid-exit-fade');
+    mainContent.classList.add(enterClass);
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    setTimeout(() => {
+      mainContent.classList.remove(enterClass);
+    }, 350);
+  } finally {
+    isNavigating = false;
   }
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function registerServiceWorker() {
@@ -102,27 +184,23 @@ function registerServiceWorker() {
         .then((reg) => {
           console.debug('Service Worker registered:', reg.scope);
 
-          // Listen for incoming new worker
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // Prompt worker to activate immediately
                   newWorker.postMessage({ type: 'SKIP_WAITING' });
                 }
               });
             }
           });
 
-          // Check for service worker updates whenever app is reopened or focused
           document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
               reg.update().catch(() => {});
             }
           });
 
-          // Periodic background check every 30 minutes
           setInterval(() => {
             reg.update().catch(() => {});
           }, 30 * 60 * 1000);
@@ -131,7 +209,6 @@ function registerServiceWorker() {
           console.debug('Service Worker registration failed:', err);
         });
 
-      // Reload smoothly when new Service Worker takes control
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
@@ -140,7 +217,6 @@ function registerServiceWorker() {
         }
       });
 
-      // Listen for message from service worker
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data?.type === 'TRIGGER_SYNC') {
           flushQueue();
@@ -149,7 +225,6 @@ function registerServiceWorker() {
     });
   }
 
-  // Request persistent storage if available
   if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist().then((persistent) => {
       console.debug('Persistent storage granted:', persistent);
@@ -163,10 +238,8 @@ async function initApp() {
   initSyncPill();
   registerServiceWorker();
 
-  // Process invite/connect link if opened with invite parameters
   await checkAndProcessInviteLink();
 
-  // Check if first-run user key exists
   const keyExists = await hasUserKey();
   if (!keyExists) {
     renderOnboardingModal(() => {
@@ -177,16 +250,25 @@ async function initApp() {
   window.addEventListener('hashchange', handleRouting);
   await handleRouting();
 
-  // Trigger sync on boot if user key is configured
   if (keyExists) {
     flushQueue();
   }
 }
 
-// Security Check: Lock screen always precedes any data rendering
-checkAndShowLock(() => {
-  initApp();
-  initAutoLock(() => {
-    handleRouting();
+// Startup Sequence with Splash / Opening Screen
+async function boot() {
+  await initTheme();
+
+  // Show splash opening screen first
+  await showSplashScreen('splash-screen', 1300);
+
+  // Then check lock state
+  checkAndShowLock(() => {
+    initApp();
+    initAutoLock(() => {
+      handleRouting();
+    });
   });
-});
+}
+
+boot();

@@ -14,7 +14,7 @@ export async function renderDetailView(container, entryId) {
 
   if (!entry || entry.deleted) {
     container.innerHTML = `
-      <div class="view-enter flex flex-col items-center justify-center py-16 text-center">
+      <div class="flex flex-col items-center justify-center py-16 text-center">
         <p class="font-serif text-lg font-semibold text-ink">Catatan tidak ditemukan</p>
         <a href="#/timeline" class="mt-4 inline-flex items-center gap-1.5 rounded-field bg-accent px-4 py-2 text-xs font-semibold text-cream">
           &larr; Kembali ke Timeline
@@ -41,7 +41,7 @@ export async function renderDetailView(container, entryId) {
     : null;
 
   container.innerHTML = `
-    <div class="view-enter flex flex-col gap-5 pb-8 max-w-2xl mx-auto">
+    <div class="flex flex-col gap-5 pb-8 max-w-2xl mx-auto">
       <!-- Top Bar: Back and Actions -->
       <div class="flex items-center justify-between border-b pb-3">
         <a href="#/timeline" class="inline-flex items-center gap-1.5 rounded-field px-2.5 py-1.5 text-xs font-medium text-ink-muted hover:bg-sand hover:text-ink transition cursor-pointer">
