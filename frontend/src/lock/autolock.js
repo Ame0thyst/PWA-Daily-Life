@@ -104,11 +104,11 @@ async function renderLockScreen() {
 
   container.innerHTML = `
     <div class="flex w-full max-w-xs flex-col items-center px-4 py-8 text-center animate-fade-in">
-      <div class="mb-4 flex size-20 items-center justify-center rounded-2xl bg-paper shadow-card overflow-hidden border border-line">
+      <div class="mb-4 flex size-20 items-center justify-center rounded-[24px] bg-white dark:bg-[#171A21] shadow-md overflow-hidden border border-black/[0.06]">
         <img src="icons/icon-192.png" alt="Daily Journal" class="size-full object-cover" />
       </div>
-      <h2 class="font-serif text-2xl font-bold text-ink">Daily Journal</h2>
-      <p class="mt-1 text-sm text-ink-muted" id="pin-prompt-text">Masukkan PIN untuk masuk</p>
+      <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Daily Journal</h2>
+      <p class="mt-1 text-sm text-gray-500" id="pin-prompt-text">Masukkan PIN untuk masuk</p>
 
       <!-- PIN Dots Indicator -->
       <div class="my-6 flex items-center justify-center gap-4" id="pin-dots" role="status" aria-label="PIN terisi">

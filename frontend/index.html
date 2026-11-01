@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="description" content="Daily Journal — Ruang Cerita Pribadi offline-first dengan analitik mood dan multi-user" />
-  <meta name="theme-color" content="#080B12" />
+  <meta name="theme-color" content="#F4F5F8" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Daily Journal" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
@@ -14,168 +14,101 @@
   <title>Daily Journal — Ruang Cerita Pribadi</title>
   <link rel="stylesheet" href="/src/styles/app.css" />
 </head>
-<body class="font-sans text-[15px] antialiased selection:bg-orange-500/30 selection:text-white">
+<body class="font-sans text-[15px] antialiased selection:bg-black selection:text-white">
 
   <!-- 1. Opening / Splash Screen -->
-  <div id="splash-screen" class="fixed inset-0 z-60 flex items-center justify-center bg-[#080B12] transition-all"></div>
+  <div id="splash-screen" class="fixed inset-0 z-60 flex items-center justify-center bg-[#F4F5F8] dark:bg-[#0F1115] transition-all"></div>
 
   <!-- 2. Lock Screen (PIN & Biometric) -->
-  <div id="lock-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#080B12] hidden"></div>
+  <div id="lock-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#F4F5F8] dark:bg-[#0F1115] hidden"></div>
 
-  <!-- 3. Main App Container (Desktop Sidebar + Main App Grid) -->
-  <div id="app" class="hidden min-h-screen flex flex-col md:flex-row">
+  <!-- 3. Main App Container -->
+  <div id="app" class="hidden min-h-screen flex flex-col">
 
-    <!-- DESKTOP / TABLET SIDEBAR -->
-    <aside id="desktop-sidebar"
-      class="hidden md:flex md:w-64 lg:w-72 shrink-0 flex-col justify-between border-r border-white/10 p-6 glass-panel sticky top-0 h-screen select-none">
+    <!-- Top Header Bar -->
+    <header id="app-header"
+      class="sticky top-0 z-20 flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.08] bg-[#F4F5F8]/90 dark:bg-[#0F1115]/90 px-4 sm:px-8 py-3.5 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
       
-      <!-- Logo Branding -->
-      <div class="flex flex-col gap-8">
-        <div class="flex items-center gap-3">
-          <div class="size-11 rounded-2xl bg-gradient-to-br from-amber-200/20 to-purple-500/20 border border-white/20 flex items-center justify-center shadow-lg shadow-purple-500/10">
-            <span class="font-serif text-2xl font-black text-white italic drop-shadow-sm">D</span>
-          </div>
-          <div class="flex flex-col">
-            <h1 class="font-serif text-lg font-bold text-white tracking-tight leading-tight">Daily Journal</h1>
-            <span class="text-xs text-slate-400 font-sans">Ruang Cerita Pribadi</span>
-          </div>
+      <!-- App Brand Logo & Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="size-8.5 rounded-xl bg-[#181B20] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+          D
         </div>
-
-        <!-- Sidebar Navigation Links -->
-        <nav class="flex flex-col gap-2">
-          <a href="#/write" data-tab="write"
-            class="nav-tab flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm text-slate-300 transition-all cursor-pointer">
-            <span class="text-lg">✍️</span>
-            <span class="font-medium">Tulis</span>
-          </a>
-          <a href="#/timeline" data-tab="timeline"
-            class="nav-tab flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm text-slate-300 transition-all cursor-pointer">
-            <span class="text-lg">📅</span>
-            <span class="font-medium">Timeline</span>
-          </a>
-          <a href="#/analytics" data-tab="analytics"
-            class="nav-tab flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm text-slate-300 transition-all cursor-pointer">
-            <span class="text-lg">📊</span>
-            <span class="font-medium">Analitik</span>
-          </a>
-          <a href="#/settings" data-tab="settings"
-            class="nav-tab flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm text-slate-300 transition-all cursor-pointer">
-            <span class="text-lg">⚙️</span>
-            <span class="font-medium">Pengaturan</span>
-          </a>
-        </nav>
+        <div class="flex flex-col">
+          <span class="font-bold text-sm tracking-tight text-gray-900 dark:text-white leading-tight">Daily Journal</span>
+          <span class="text-[10px] text-gray-400 font-medium">Ruang Cerita Pribadi</span>
+        </div>
       </div>
 
-      <!-- Sidebar User Profile Capsule at bottom -->
-      <div id="sidebar-user-capsule" class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] p-3 cursor-pointer hover:bg-white/[0.08] transition">
-        <div class="flex items-center gap-2.5">
-          <div id="sidebar-avatar-img-box" class="size-9 rounded-full overflow-hidden border border-amber-400/50 bg-amber-500/20 flex items-center justify-center font-bold text-amber-300 text-sm">
-            A
+      <!-- Right Header Actions: Sync, Theme, Profile -->
+      <div class="flex items-center gap-2.5">
+        <!-- Sync Pill -->
+        <div id="sync-pill-container"></div>
+
+        <!-- Theme Toggle -->
+        <button type="button" id="btn-header-theme" title="Ganti Tema"
+          class="size-9 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] dark:border-white/[0.08] shadow-2xs flex items-center justify-center text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all cursor-pointer">
+          🎨
+        </button>
+
+        <!-- User Profile Avatar Pill -->
+        <button type="button" id="btn-header-profile" title="Profil Pengguna"
+          class="flex items-center gap-2 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] dark:border-white/[0.08] p-1 pr-2.5 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer">
+          <div id="header-avatar-circle"
+            class="size-7 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-bold text-xs text-gray-800 dark:text-white">
+            V
           </div>
-          <div class="flex flex-col min-w-0">
-            <span id="sidebar-username-text" class="text-xs font-semibold text-white truncate max-w-[120px]">Alif</span>
-            <span class="text-[10px] text-slate-400">Ketuk untuk profil</span>
-          </div>
-        </div>
-        <span class="text-slate-400 text-xs">✏️</span>
+          <span id="header-username-badge" class="text-xs font-semibold text-gray-800 dark:text-white max-w-[80px] truncate">Vanessa</span>
+        </button>
       </div>
-    </aside>
+    </header>
 
-    <!-- MAIN CONTENT AREA & TOP HEADER -->
-    <div class="flex-1 flex flex-col min-h-screen">
-      <!-- Top Header Bar -->
-      <header id="app-header"
-        class="sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-[#080B12]/80 px-4 sm:px-8 py-3.5 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
-        
-        <!-- Mobile Logo (Visible only on mobile) -->
-        <div class="flex items-center gap-2.5 md:hidden">
-          <div class="size-8 rounded-xl bg-gradient-to-br from-amber-200/20 to-purple-500/20 border border-white/20 flex items-center justify-center">
-            <span class="font-serif text-base font-black text-white italic">D</span>
-          </div>
-          <span class="font-serif font-bold text-white text-base">Daily Journal</span>
-        </div>
+    <!-- Main Content Container with liquid transition wrapper -->
+    <main id="main-content"
+      class="mx-auto w-full max-w-2xl flex-1 px-4 sm:px-6 pt-5 pb-28 transition-all">
+    </main>
 
-        <!-- Desktop empty placeholder for flex alignment -->
-        <div class="hidden md:block"></div>
-
-        <!-- Top Right Actions: Sync, Notif, Theme, User Avatar -->
-        <div class="flex items-center gap-2.5 sm:gap-3">
-          <!-- Sync Pill -->
-          <div id="sync-pill-container"></div>
-
-          <!-- Notifikasi Button -->
-          <button type="button" id="btn-header-notif" title="Notifikasi Jurnal"
-            class="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/[0.1] hover:text-white transition cursor-pointer">
-            <span>🔔</span> <span>Notifikasi</span>
-          </button>
-
-          <!-- Tema Button -->
-          <button type="button" id="btn-header-theme" title="Ganti Tema Tampilan"
-            class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/[0.1] hover:text-white transition cursor-pointer">
-            <span>🎨</span> <span class="hidden sm:inline">Tema</span>
-          </button>
-
-          <!-- Profile Avatar Button -->
-          <button type="button" id="btn-header-profile" title="Profil Pengguna"
-            class="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.06] p-1 pr-2 sm:pr-2.5 hover:border-amber-400/60 transition cursor-pointer active:scale-95">
-            <div id="header-avatar-circle"
-              class="size-7 sm:size-7.5 rounded-full overflow-hidden border border-amber-400/60 bg-amber-500/20 flex items-center justify-center font-bold text-amber-300 text-xs">
-              A
-            </div>
-            <span id="header-username-badge" class="text-xs font-semibold text-white max-w-[70px] truncate hidden sm:inline">Alif</span>
-          </button>
-        </div>
-      </header>
-
-      <!-- Main Content Container with liquid transition wrapper -->
-      <main id="main-content"
-        class="mx-auto w-full max-w-4xl flex-1 px-4 sm:px-8 pb-28 pt-6 md:pb-12 transition-all">
-      </main>
-    </div>
-
-    <!-- MOBILE FLOATING BOTTOM NAVIGATION DOCK (Hidden on md and above) -->
+    <!-- FLOATING OBSIDIAN BOTTOM NAVIGATION DOCK (TripGlide-Style) -->
     <nav id="bottom-nav"
-      class="md:hidden fixed inset-x-3 bottom-3 z-30 rounded-3xl border border-white/15 bg-[#121622]/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl shadow-2xl">
-      <ul class="flex justify-around items-center px-2 py-1.5">
-        <li>
-          <a href="#/write" data-tab="write"
-            class="nav-tab flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1
-                   text-xs text-slate-400 transition-all cursor-pointer active:scale-90">
-            <span class="text-lg">✍️</span>
-            <span class="text-[11px] font-medium leading-none">Tulis</span>
-          </a>
-        </li>
-        <li>
-          <a href="#/timeline" data-tab="timeline"
-            class="nav-tab flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1
-                   text-xs text-slate-400 transition-all cursor-pointer active:scale-90">
-            <span class="text-lg">📅</span>
-            <span class="text-[11px] font-medium leading-none">Timeline</span>
-          </a>
-        </li>
-        <li>
-          <a href="#/analytics" data-tab="analytics"
-            class="nav-tab flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1
-                   text-xs text-slate-400 transition-all cursor-pointer active:scale-90">
-            <span class="text-lg">📊</span>
-            <span class="text-[11px] font-medium leading-none">Analitik</span>
-          </a>
-        </li>
-        <li>
-          <a href="#/settings" data-tab="settings"
-            class="nav-tab flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1
-                   text-xs text-slate-400 transition-all cursor-pointer active:scale-90">
-            <span class="text-lg">⚙️</span>
-            <span class="text-[11px] font-medium leading-none">Pengaturan</span>
-          </a>
-        </li>
-      </ul>
+      class="fixed bottom-5 inset-x-0 mx-auto max-w-[280px] z-40 nav-dock-obsidian p-1.5 flex items-center justify-between">
+      
+      <!-- Tab 1: Write (Home/Tulis) -->
+      <a href="#/write" data-tab="write" title="Tulis Jurnal"
+        class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
+        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+        </svg>
+      </a>
+
+      <!-- Tab 2: Timeline (Schedule/Explore) -->
+      <a href="#/timeline" data-tab="timeline" title="Timeline"
+        class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
+        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+        </svg>
+      </a>
+
+      <!-- Tab 3: Analytics (Stats) -->
+      <a href="#/analytics" data-tab="analytics" title="Analitik"
+        class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
+        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+        </svg>
+      </a>
+
+      <!-- Tab 4: Settings (Grid icon matching screenshot) -->
+      <a href="#/settings" data-tab="settings" title="Pengaturan"
+        class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
+        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+        </svg>
+      </a>
     </nav>
   </div>
 
   <!-- Toast Container -->
   <div id="toast-container"
-    class="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 md:bottom-8 pointer-events-none"></div>
+    class="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 pointer-events-none"></div>
 
   <script type="module" src="/src/main.js"></script>
 </body>

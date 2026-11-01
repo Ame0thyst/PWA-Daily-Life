@@ -30,31 +30,31 @@ export async function renderSettingsView(container) {
   const failedItems = queueItems.filter((q) => q.status === 'failed');
 
   container.innerHTML = `
-    <div class="flex flex-col gap-6 pb-12">
-      <div class="border-b border-white/10 pb-3 flex items-center justify-between">
-        <h2 class="font-serif text-xl font-bold text-white">Pengaturan</h2>
+    <div class="flex flex-col gap-5 pb-24 max-w-xl mx-auto">
+      <div class="flex items-center justify-between pt-1">
+        <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Pengaturan</h2>
       </div>
 
       <!-- Profil Pengguna -->
-      <section class="glass-panel rounded-2xl p-4 border border-white/10 flex items-center justify-between gap-4">
+      <section class="modern-card p-5 flex items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
-          <div class="size-13 rounded-full overflow-hidden border-2 border-amber-400/60 bg-amber-500/20 flex items-center justify-center font-bold text-amber-300 text-lg shadow-md">
-            ${profile.avatar ? `<img src="${profile.avatar}" alt="${profile.username}" class="size-full object-cover" />` : (profile.username || 'A')[0].toUpperCase()}
+          <div class="size-14 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-800 dark:text-white text-lg shadow-xs">
+            ${profile.avatar ? `<img src="${profile.avatar}" alt="${profile.username}" class="size-full object-cover" />` : (profile.username || 'V')[0].toUpperCase()}
           </div>
           <div class="flex flex-col">
-            <h4 class="font-serif text-base font-bold text-white">${escapeHtml(profile.username || 'Alif')}</h4>
-            <span class="text-xs text-slate-400">Tersinkron dengan Kunci Diary Anda</span>
+            <h4 class="text-base font-bold text-gray-900 dark:text-white">${escapeHtml(profile.username || 'Vanessa')}</h4>
+            <span class="text-xs text-gray-500">Tersinkron dengan Kunci Diary Anda</span>
           </div>
         </div>
         <button type="button" id="btn-edit-profile-settings"
-          class="rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold text-white hover:bg-white/10 cursor-pointer transition">
-          ✏️ Ubah Profil
+          class="btn-obsidian px-5 py-2.5 text-xs font-bold cursor-pointer">
+          Ubah Profil
         </button>
       </section>
 
       <!-- 0. Status Instalasi PWA -->
       ${standaloneActive ? `
-        <section class="rounded-card border border-emerald-300 bg-emerald-50/60 dark:bg-emerald-950/20 dark:border-emerald-800 p-4 shadow-card flex items-center justify-between gap-3">
+        <section class="modern-card border border-emerald-300 bg-emerald-50/60 dark:bg-emerald-950/20 dark:border-emerald-800 p-4 shadow-card flex items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">
             <span class="inline-flex size-6 items-center justify-center rounded-full bg-emerald-600 text-cream text-xs font-bold">✓</span>
             <div>
@@ -64,7 +64,7 @@ export async function renderSettingsView(container) {
           </div>
         </section>
       ` : `
-        <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
+        <section class="modern-card border bg-paper p-4 shadow-card flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
               <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,7 +92,7 @@ export async function renderSettingsView(container) {
       `}
 
       <!-- 1. Kunci Diary Kriptografi (User Identity) -->
-      <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
+      <section class="modern-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -125,7 +125,7 @@ export async function renderSettingsView(container) {
       </section>
 
       <!-- 2. Sinkronisasi & API GAS -->
-      <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
+      <section class="modern-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -191,7 +191,7 @@ export async function renderSettingsView(container) {
       </section>
 
       <!-- 3. Keamanan & PIN -->
-      <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
+      <section class="modern-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -245,7 +245,7 @@ export async function renderSettingsView(container) {
       </section>
 
       <!-- 4. Ekspor & Cadangan Data -->
-      <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
+      <section class="modern-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -266,7 +266,7 @@ export async function renderSettingsView(container) {
       </section>
 
       <!-- 5. Tampilan -->
-      <section class="rounded-card border bg-paper p-4 shadow-card flex flex-col gap-3">
+      <section class="modern-card border bg-paper p-4 shadow-card flex flex-col gap-3">
         <h3 class="font-serif text-sm font-semibold text-ink flex items-center gap-2">
           <svg class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
@@ -286,7 +286,7 @@ export async function renderSettingsView(container) {
       </section>
 
       <!-- 6. Reset & Cache -->
-      <section class="rounded-card border border-danger/20 bg-paper p-4 shadow-card flex flex-col gap-2">
+      <section class="modern-card border border-danger/20 bg-paper p-4 shadow-card flex flex-col gap-2">
         <h3 class="font-serif text-sm font-semibold text-danger">Reset Penyimpanan Lokal</h3>
         <p class="text-xs text-ink-muted">Bersihkan cache lokal di IndexedDB browser ini. Data yang sudah tersinkron ke Google Sheets tetap aman.</p>
         <div>

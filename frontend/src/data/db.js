@@ -50,7 +50,7 @@ export async function getSettings() {
  * User Profile helpers (Username & Avatar)
  */
 export async function getUserProfile() {
-  const username = (await getSetting('user_profile_name')) || 'Alif';
+  const username = (await getSetting('user_profile_name')) || 'Vanessa';
   const avatar = (await getSetting('user_profile_avatar')) || '';
   return { username, avatar };
 }

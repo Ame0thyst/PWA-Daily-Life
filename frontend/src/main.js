@@ -44,14 +44,14 @@ async function initTheme() {
 
 async function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme');
-  const next = current === 'light' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
   await setSetting('theme', next);
-  if (next === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
-    showToast('Tema Light Cream aktif', 'info');
+  if (next === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    showToast('Tema Dark aktif', 'info');
   } else {
     document.documentElement.removeAttribute('data-theme');
-    showToast('Tema Midnight Space aktif', 'info');
+    showToast('Tema Light aktif', 'info');
   }
 }
 
@@ -60,22 +60,21 @@ function updateNavigation(activeTab) {
     const tabName = tab.dataset.tab;
     if (tabName === activeTab) {
       tab.setAttribute('aria-current', 'page');
-      tab.classList.add('nav-tab-aurora');
-      tab.classList.remove('text-slate-400');
+      tab.classList.add('nav-item-active');
+      tab.classList.remove('nav-item-inactive');
     } else {
       tab.removeAttribute('aria-current');
-      tab.classList.remove('nav-tab-aurora');
-      tab.classList.add('text-slate-400');
+      tab.classList.remove('nav-item-active');
+      tab.classList.add('nav-item-inactive');
     }
   });
 }
 
 async function updateProfileUI() {
   const profile = await getUserProfile();
-  const username = profile.username || 'Alif';
+  const username = profile.username || 'Vanessa';
   const initial = username[0].toUpperCase();
 
-  // Header Avatar
   const headerCircle = document.getElementById('header-avatar-circle');
   const headerUsername = document.getElementById('header-username-badge');
   if (headerCircle) {
@@ -86,18 +85,6 @@ async function updateProfileUI() {
     }
   }
   if (headerUsername) headerUsername.textContent = username;
-
-  // Sidebar Avatar
-  const sidebarCircle = document.getElementById('sidebar-avatar-img-box');
-  const sidebarUsername = document.getElementById('sidebar-username-text');
-  if (sidebarCircle) {
-    if (profile.avatar) {
-      sidebarCircle.innerHTML = `<img src="${profile.avatar}" alt="${username}" class="size-full object-cover" />`;
-    } else {
-      sidebarCircle.textContent = initial;
-    }
-  }
-  if (sidebarUsername) sidebarUsername.textContent = username;
 }
 
 async function handleRouting() {

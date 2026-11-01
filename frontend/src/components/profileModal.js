@@ -17,13 +17,13 @@ export async function openProfileModal() {
   modalOverlay.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in';
 
   modalOverlay.innerHTML = `
-    <div class="relative w-full max-w-sm rounded-3xl border border-white/15 bg-[#121622]/95 p-6 shadow-2xl backdrop-blur-2xl text-cream flex flex-col gap-5">
+    <div class="relative w-full max-w-sm rounded-[32px] border border-black/[0.08] bg-white dark:bg-[#171A21] p-6 shadow-2xl text-gray-900 dark:text-white flex flex-col gap-5">
       <!-- Header -->
-      <div class="flex items-center justify-between border-b border-white/10 pb-3">
-        <h3 class="font-serif text-lg font-bold text-white flex items-center gap-2">
+      <div class="flex items-center justify-between border-b border-black/[0.05] dark:border-white/10 pb-3">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <span>👤</span> Profil Pengguna
         </h3>
-        <button type="button" id="btn-close-profile" class="text-white/60 hover:text-white text-xl leading-none cursor-pointer">
+        <button type="button" id="btn-close-profile" class="text-gray-400 hover:text-gray-600 text-xl leading-none cursor-pointer">
           &times;
         </button>
       </div>
@@ -31,40 +31,40 @@ export async function openProfileModal() {
       <!-- Avatar Picker -->
       <div class="flex flex-col items-center gap-2.5">
         <div class="relative group cursor-pointer" id="avatar-click-zone">
-          <div class="size-24 rounded-full overflow-hidden border-2 border-accent/60 bg-sand/20 shadow-lg flex items-center justify-center">
+          <div class="size-24 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shadow-sm flex items-center justify-center">
             ${currentAvatarB64 ? `
               <img id="profile-avatar-preview" src="${currentAvatarB64}" alt="Avatar" class="size-full object-cover" />
             ` : `
-              <span id="profile-avatar-fallback" class="font-serif text-3xl font-bold text-accent">
-                ${(profile.username || 'A')[0].toUpperCase()}
+              <span id="profile-avatar-fallback" class="font-bold text-3xl text-gray-800 dark:text-gray-200">
+                ${(profile.username || 'V')[0].toUpperCase()}
               </span>
             `}
           </div>
-          <div class="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-semibold text-white transition-opacity">
+          <div class="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-semibold text-white transition-opacity">
             📷 Ganti
           </div>
           <input type="file" id="avatar-file-input" accept="image/*" class="hidden" />
         </div>
-        <span class="text-[11px] text-white/50">Ketuk untuk mengganti foto</span>
+        <span class="text-[11px] text-gray-400">Ketuk untuk mengganti foto</span>
       </div>
 
       <!-- Username Input -->
       <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-semibold uppercase tracking-wider text-white/70">Nama / Panggilan</label>
-        <input type="text" id="input-username" value="${escapeHtml(profile.username || 'Alif')}"
+        <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Nama / Panggilan</label>
+        <input type="text" id="input-username" value="${escapeHtml(profile.username || 'Vanessa')}"
           placeholder="Masukkan namamu..."
           maxlength="24"
-          class="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder-white/40 focus:border-accent focus:outline-hidden focus:ring-1 focus:ring-accent" />
+          class="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-hidden" />
       </div>
 
       <!-- Action Buttons -->
       <div class="flex items-center justify-end gap-2 pt-2">
         <button type="button" id="btn-cancel-profile"
-          class="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white/80 hover:bg-white/10 cursor-pointer">
+          class="chip-pill-inactive rounded-full px-5 py-2.5 text-xs font-semibold">
           Batal
         </button>
         <button type="button" id="btn-save-profile"
-          class="rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-2 text-xs font-semibold text-white shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/40 cursor-pointer">
+          class="btn-obsidian rounded-full px-6 py-2.5 text-xs font-bold">
           Simpan Profil
         </button>
       </div>
@@ -162,3 +162,4 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+

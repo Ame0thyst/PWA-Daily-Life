@@ -1,47 +1,48 @@
 /**
- * moodPicker.js — 5 Frosted Glass Cards matching reference aesthetic
+ * moodPicker.js — Clean Nordic / iOS Minimalist Mood Selector
+ * Inspired by TripGlide card & pill components
  */
 
 export const MOODS = [
   {
     level: 1,
-    label: 'Sangat Buruk',
-    icon: '😭',
+    label: 'Buruk',
+    fullLabel: 'Sangat Buruk',
+    icon: '😞',
     color: '#EF4444',
-    glowColor: 'rgba(239, 68, 68, 0.4)',
-    hint: 'Sedang berat hari ini? Tuangkan semuanya di sini, tak perlu dipendam.',
+    hint: 'Sedang berat hari ini? Tuliskan, tak perlu dipendam.',
   },
   {
     level: 2,
-    label: 'Kurang Baik',
+    label: 'Kurang',
+    fullLabel: 'Kurang Baik',
     icon: '🙁',
     color: '#F97316',
-    glowColor: 'rgba(249, 115, 22, 0.4)',
-    hint: 'Kurang bersemangat? Ceritakan perlahan, luapkan bebanmu.',
+    hint: 'Kurang bersemangat? Ceritakan perlahan di lembaran ini.',
   },
   {
     level: 3,
-    label: 'Biasa Saja',
+    label: 'Biasa',
+    fullLabel: 'Biasa Saja',
     icon: '😐',
     color: '#EAB308',
-    glowColor: 'rgba(234, 179, 8, 0.4)',
     hint: 'Hari yang tenang dan santai. Ada momen kecil yang menarik?',
   },
   {
     level: 4,
-    label: 'Hari Baik',
-    icon: '😊',
+    label: 'Baik',
+    fullLabel: 'Hari Baik',
+    icon: '🙂',
     color: '#22C55E',
-    glowColor: 'rgba(34, 197, 94, 0.4)',
-    hint: 'Suasana hati menyenangkan! Abadikan apa yang membuatmu tersenyum.',
+    hint: 'Suasana hati menyenangkan! Abadikan momen indah ini.',
   },
   {
     level: 5,
-    label: 'Sangat Baik',
-    icon: '🤩',
-    color: '#F97316',
-    glowColor: 'rgba(249, 115, 22, 0.45)',
-    hint: 'Luar biasa! Energi positif siap mengisi lembaran jurnalmu hari ini.',
+    label: 'Hebat',
+    fullLabel: 'Sangat Baik',
+    icon: '😄',
+    color: '#10B981',
+    hint: 'Luar biasa! Energi positif siap mengisi lembaran ceritamu.',
   },
 ];
 
@@ -56,45 +57,51 @@ export function renderMoodPicker(containerId, initialValue = null, onChange = nu
 
     container.innerHTML = `
       <div class="flex flex-col gap-2.5">
-        <!-- 5 Frosted Glass Cards Row -->
-        <div role="radiogroup" aria-label="Pilih suasana hati" class="grid grid-cols-5 gap-2 sm:gap-3 select-none">
+        <!-- 5 Clean Nordic Minimalist Cards Row -->
+        <div role="radiogroup" aria-label="Pilih suasana hati" class="grid grid-cols-5 gap-2 select-none">
           ${MOODS.map((m) => {
             const isSelected = currentMood === m.level;
             return `
               <button type="button" role="radio"
                 aria-checked="${isSelected ? 'true' : 'false'}"
-                aria-label="${m.label}"
+                aria-label="${m.fullLabel}"
                 data-mood="${m.level}"
-                class="mood-btn group relative flex flex-col items-center justify-center gap-2 rounded-2xl p-3 sm:py-4
-                       transition-all duration-300 cursor-pointer overflow-hidden
+                class="mood-btn group relative flex flex-col items-center justify-center gap-1.5 rounded-2xl py-3 px-1
+                       transition-all duration-200 cursor-pointer overflow-hidden
                        ${isSelected
-                         ? 'mood-card-selected'
-                         : 'glass-card text-white/70 hover:text-white'
+                         ? 'bg-[#181B20] text-white shadow-md scale-[1.04] border-transparent dark:bg-white dark:text-[#11141A]'
+                         : 'bg-white border border-black/[0.06] text-gray-700 hover:bg-gray-50 hover:border-black/10 dark:bg-[#171A21] dark:border-white/[0.08] dark:text-gray-300'
                        }">
 
                 <!-- Emoji Icon -->
-                <span class="text-3xl sm:text-4xl leading-none transition-transform duration-300 group-hover:scale-115 ${isSelected ? 'scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]' : ''}" aria-hidden="true">
+                <span class="text-2xl leading-none transition-transform duration-200 group-hover:scale-110" aria-hidden="true">
                   ${m.icon}
                 </span>
 
-                <!-- Single line clean label -->
-                <span class="text-xs sm:text-[13px] font-medium tracking-tight text-center whitespace-nowrap ${isSelected ? 'text-white font-semibold' : 'text-white/80'}">
+                <!-- Clean Single Word Label -->
+                <span class="text-[11px] font-semibold tracking-tight text-center leading-tight">
                   ${m.label}
                 </span>
+
+                <!-- Active Dot Indicator -->
+                ${isSelected ? `
+                  <span class="size-1 rounded-full bg-white dark:bg-[#11141A] mt-0.5"></span>
+                ` : ''}
               </button>
             `;
           }).join('')}
         </div>
 
         <!-- Dynamic Contextual Helper Banner -->
-        <div class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs backdrop-blur-md text-white/70">
+        <div class="flex items-center gap-2 rounded-xl bg-white border border-black/[0.05] px-3.5 py-2 text-xs text-gray-600 shadow-2xs dark:bg-[#171A21] dark:border-white/[0.08] dark:text-gray-400">
           ${activeObj ? `
             <span class="text-base">${activeObj.icon}</span>
-            <span class="font-medium text-white">${activeObj.label}</span> &bull; 
-            <span class="text-white/60 truncate">${activeObj.hint}</span>
+            <span class="font-semibold text-gray-900 dark:text-white">${activeObj.fullLabel}</span>
+            <span class="text-gray-400">&bull;</span>
+            <span class="truncate">${activeObj.hint}</span>
           ` : `
-            <span class="text-white/50">💬</span>
-            <span class="text-white/60">Pilih salah satu suasana hati untuk mulai mencatat.</span>
+            <span class="text-gray-400">💭</span>
+            <span>Pilih salah satu suasana hati untuk mulai mencatat.</span>
           `}
         </div>
       </div>
@@ -105,7 +112,7 @@ export function renderMoodPicker(containerId, initialValue = null, onChange = nu
         const level = parseInt(btn.dataset.mood, 10);
         currentMood = level;
 
-        if (navigator.vibrate) navigator.vibrate(12);
+        if (navigator.vibrate) navigator.vibrate(10);
 
         renderHTML();
 

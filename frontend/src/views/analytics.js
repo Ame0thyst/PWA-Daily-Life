@@ -13,21 +13,21 @@ let currentPeriodDays = 30; // 30, 90, 365
 
 export async function renderAnalyticsView(container) {
   container.innerHTML = `
-    <div class="flex flex-col gap-6 pb-12">
+    <div class="flex flex-col gap-5 pb-24 max-w-xl mx-auto">
       <!-- Header with Time Filter -->
-      <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3">
-        <h2 class="font-serif text-xl font-bold text-ink">Analitik Jurnal</h2>
-        <div class="flex rounded-field border bg-paper p-0.5 text-xs font-medium" role="group">
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+        <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Analitik Jurnal</h2>
+        <div class="flex items-center gap-1.5" role="group">
           <button type="button" data-period="30"
-            class="period-filter-btn rounded-field px-3 py-1.5 transition cursor-pointer ${currentPeriodDays === 30 ? 'bg-accent text-cream' : 'text-ink-muted hover:text-ink'}">
+            class="period-filter-btn chip-pill ${currentPeriodDays === 30 ? 'chip-pill-active' : 'chip-pill-inactive'}">
             30 Hari
           </button>
           <button type="button" data-period="90"
-            class="period-filter-btn rounded-field px-3 py-1.5 transition cursor-pointer ${currentPeriodDays === 90 ? 'bg-accent text-cream' : 'text-ink-muted hover:text-ink'}">
+            class="period-filter-btn chip-pill ${currentPeriodDays === 90 ? 'chip-pill-active' : 'chip-pill-inactive'}">
             90 Hari
           </button>
           <button type="button" data-period="365"
-            class="period-filter-btn rounded-field px-3 py-1.5 transition cursor-pointer ${currentPeriodDays === 365 ? 'bg-accent text-cream' : 'text-ink-muted hover:text-ink'}">
+            class="period-filter-btn chip-pill ${currentPeriodDays === 365 ? 'chip-pill-active' : 'chip-pill-inactive'}">
             1 Tahun
           </button>
         </div>
@@ -35,17 +35,17 @@ export async function renderAnalyticsView(container) {
 
       <!-- Quick Metrics Cards -->
       <div class="grid grid-cols-3 gap-3">
-        <div class="rounded-card border bg-paper p-3 text-center shadow-card">
-          <span class="text-xs text-ink-muted">Streak Saat Ini</span>
-          <p id="metric-streak" class="mt-1 font-serif text-2xl font-bold text-accent">0 <span class="text-xs font-sans text-ink-muted">hari</span></p>
+        <div class="modern-card p-4 text-center">
+          <span class="text-xs font-semibold text-gray-500 uppercase">Streak</span>
+          <p id="metric-streak" class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">0 <span class="text-xs font-normal text-gray-400">hari</span></p>
         </div>
-        <div class="rounded-card border bg-paper p-3 text-center shadow-card">
-          <span class="text-xs text-ink-muted">Total Entri</span>
-          <p id="metric-total" class="mt-1 font-serif text-2xl font-bold text-ink">0</p>
+        <div class="modern-card p-4 text-center">
+          <span class="text-xs font-semibold text-gray-500 uppercase">Total Entri</span>
+          <p id="metric-total" class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">0</p>
         </div>
-        <div class="rounded-card border bg-paper p-3 text-center shadow-card">
-          <span class="text-xs text-ink-muted">Rata-rata Mood</span>
-          <p id="metric-avg-mood" class="mt-1 font-serif text-2xl font-bold text-ink">-</p>
+        <div class="modern-card p-4 text-center">
+          <span class="text-xs font-semibold text-gray-500 uppercase">Rata-rata</span>
+          <p id="metric-avg-mood" class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">-</p>
         </div>
       </div>
 
@@ -55,18 +55,18 @@ export async function renderAnalyticsView(container) {
       </section>
 
       <!-- Mood Trend Chart Section -->
-      <section class="rounded-card border bg-paper p-4 shadow-card">
-        <h3 class="font-serif text-sm font-semibold text-ink mb-3">Tren Mood Harian</h3>
-        <div class="relative h-56 w-full">
+      <section class="modern-card p-5">
+        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Tren Suasana Hati Harian</h3>
+        <div class="relative h-52 w-full">
           <canvas id="mood-trend-chart"></canvas>
         </div>
       </section>
 
       <!-- Top Tags Section -->
-      <section class="rounded-card border bg-paper p-4 shadow-card">
-        <h3 class="font-serif text-sm font-semibold text-ink mb-3">Top Topik & Tag</h3>
+      <section class="modern-card p-5">
+        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Top Topik & Tag</h3>
         <div id="top-tags-container" class="flex flex-col gap-2.5">
-          <p class="text-xs text-ink-muted">Belum ada tag yang digunakan.</p>
+          <p class="text-xs text-gray-500">Belum ada tag yang digunakan.</p>
         </div>
       </section>
     </div>

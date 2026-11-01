@@ -12,17 +12,17 @@ export function initSyncPill(containerId = 'sync-pill-container') {
 
   container.innerHTML = `
     <button type="button" id="sync-pill-btn" role="status" aria-live="polite" data-state="synced"
-      class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-300 cursor-pointer
-             bg-paper/80 border border-line/70 text-ink shadow-2xs hover:bg-sand/60 active:scale-95
-             data-[state=offline]:border-amber-400/40 data-[state=offline]:bg-amber-500/10 data-[state=offline]:text-amber-800 dark:data-[state=offline]:text-amber-300
-             data-[state=syncing]:border-sky-400/40 data-[state=syncing]:bg-sky-500/10 data-[state=syncing]:text-sky-800 dark:data-[state=syncing]:text-sky-300
-             data-[state=error]:border-rose-400/40 data-[state=error]:bg-rose-500/10 data-[state=error]:text-rose-700 dark:data-[state=error]:text-rose-300
-             data-[state=auth_error]:border-rose-400/40 data-[state=auth_error]:bg-rose-500/10 data-[state=auth_error]:text-rose-700 dark:data-[state=auth_error]:text-rose-300">
+      class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-300 cursor-pointer
+             bg-white dark:bg-[#171A21] border border-black/[0.06] dark:border-white/[0.08] text-gray-800 dark:text-gray-200 shadow-2xs hover:bg-gray-50 active:scale-95
+             data-[state=offline]:border-amber-400/40 data-[state=offline]:bg-amber-500/10 data-[state=offline]:text-amber-700
+             data-[state=syncing]:border-sky-400/40 data-[state=syncing]:bg-sky-500/10 data-[state=syncing]:text-sky-700
+             data-[state=error]:border-rose-400/40 data-[state=error]:bg-rose-500/10 data-[state=error]:text-rose-700
+             data-[state=auth_error]:border-rose-400/40 data-[state=auth_error]:bg-rose-500/10 data-[state=auth_error]:text-rose-700">
       <span class="relative flex size-2">
         <span id="sync-pill-ping" class="absolute inline-flex size-full rounded-full opacity-75"></span>
         <span id="sync-pill-dot" class="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
       </span>
-      <span id="sync-pill-text" class="leading-none">Tersinkron</span>
+      <span id="sync-pill-text" class="leading-none text-[11px]">Tersinkron</span>
     </button>
   `;
 

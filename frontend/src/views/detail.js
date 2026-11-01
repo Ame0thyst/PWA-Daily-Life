@@ -1,5 +1,6 @@
 /**
- * detail.js — Single journal entry detail view with progressive HD image loading
+ * detail.js — TripGlide-inspired Detail View
+ * Screen 2 Layout: Hero Image with Floating Action Buttons & Curving Bottom Sheet
  */
 import { getEntry, saveEntry, deleteEntryLocal } from '../data/db.js';
 import { MOODS, renderMoodPicker } from '../components/moodPicker.js';
@@ -14,9 +15,9 @@ export async function renderDetailView(container, entryId) {
 
   if (!entry || entry.deleted) {
     container.innerHTML = `
-      <div class="flex flex-col items-center justify-center py-16 text-center">
-        <p class="font-serif text-lg font-semibold text-ink">Catatan tidak ditemukan</p>
-        <a href="#/timeline" class="mt-4 inline-flex items-center gap-1.5 rounded-field bg-accent px-4 py-2 text-xs font-semibold text-cream">
+      <div class="modern-card p-12 flex flex-col items-center justify-center text-center max-w-lg mx-auto">
+        <p class="font-bold text-gray-900 dark:text-white">Catatan tidak ditemukan</p>
+        <a href="#/timeline" class="btn-obsidian mt-4 inline-flex items-center gap-1.5 px-6 py-2.5 text-xs font-bold">
           &larr; Kembali ke Timeline
         </a>
       </div>
@@ -28,7 +29,7 @@ export async function renderDetailView(container, entryId) {
   const dateObj = new Date(entry.timestamp);
   const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-  const fullDateStr = `${days[dateObj.getDay()]}, ${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} · ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+  const fullDateStr = `${days[dateObj.getDay()]}, ${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} &bull; ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
 
   const tags = Array.isArray(entry.tags)
     ? entry.tags
@@ -41,85 +42,92 @@ export async function renderDetailView(container, entryId) {
     : null;
 
   container.innerHTML = `
-    <div class="flex flex-col gap-5 pb-8 max-w-2xl mx-auto">
-      <!-- Top Bar: Back and Actions -->
-      <div class="flex items-center justify-between border-b pb-3">
-        <a href="#/timeline" class="inline-flex items-center gap-1.5 rounded-field px-2.5 py-1.5 text-xs font-medium text-ink-muted hover:bg-sand hover:text-ink transition cursor-pointer">
-          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+    <div class="flex flex-col pb-28 max-w-xl mx-auto">
+      
+      <!-- Top Floating Navigation Bar -->
+      <div class="flex items-center justify-between py-2 mb-2">
+        <a href="#/timeline"
+          class="size-10 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] shadow-xs flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 active:scale-95 transition-all">
+          <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
-          Kembali
         </a>
 
         <div class="flex items-center gap-2">
           <button type="button" id="btn-edit-entry"
-            class="rounded-field border bg-paper px-3 py-1.5 text-xs font-medium text-ink transition hover:bg-sand cursor-pointer">
-            Edit
+            class="size-10 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] shadow-xs flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 active:scale-95 transition-all cursor-pointer" title="Edit">
+            ✏️
           </button>
           <button type="button" id="btn-delete-entry"
-            class="rounded-field border border-danger/30 bg-paper px-3 py-1.5 text-xs font-medium text-danger transition hover:bg-danger/10 cursor-pointer">
-            Hapus
+            class="size-10 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] shadow-xs flex items-center justify-center text-rose-600 hover:bg-rose-50 active:scale-95 transition-all cursor-pointer" title="Hapus">
+            🗑️
           </button>
         </div>
       </div>
 
-      <!-- Date & Mood Info -->
-      <div class="flex flex-col gap-1.5">
-        <time class="text-xs font-medium text-ink-muted">${fullDateStr}</time>
-        <div class="flex items-center gap-2">
-          <span class="text-2xl" aria-hidden="true">${moodObj.icon}</span>
-          <span class="font-serif text-lg font-bold text-ink">${moodObj.label}</span>
-          <span class="size-2 rounded-full ${moodObj.twColor}"></span>
-        </div>
-      </div>
-
-      <!-- Photo Display with progressive loading -->
+      <!-- Hero Image (If photo exists) -->
       ${thumbSrc || entry.fileId ? `
-        <div class="relative overflow-hidden rounded-card border bg-sand/30 shadow-card">
+        <div class="relative overflow-hidden rounded-[32px] shadow-sm bg-gray-100 dark:bg-gray-800 border border-black/[0.06] max-h-80 mb-4">
           <img id="detail-image" src="${thumbSrc || ''}" alt="Foto Jurnal"
-            class="w-full max-h-[480px] object-contain transition-all duration-300 ${entry.fileId ? 'filter blur-[1px]' : ''}" />
-          <div id="image-hd-badge" class="absolute bottom-2 right-2 rounded-full bg-ink/75 px-2.5 py-1 text-[10px] font-medium text-cream backdrop-blur">
-            ${entry.fileId ? 'Memuat HD...' : 'Thumbnail'}
+            class="w-full h-72 sm:h-80 object-cover transition-all duration-300 ${entry.fileId ? 'filter blur-[1px]' : ''}" />
+          <div id="image-hd-badge" class="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-[10px] font-semibold text-white backdrop-blur-md">
+            ${entry.fileId ? 'Memuat HD...' : 'Foto'}
           </div>
         </div>
       ` : ''}
 
-      <!-- Main Text Content (View mode) -->
-      <div id="entry-content-view" class="font-serif text-[17px] leading-[1.8] text-ink whitespace-pre-wrap">
-        ${escapeHtml(entry.text || '')}
-      </div>
-
-      <!-- Edit Form (Hidden by default) -->
-      <div id="entry-content-edit" class="hidden flex flex-col gap-3">
-        <label class="text-xs font-medium text-ink-muted">Ubah Mood</label>
-        <div id="edit-mood-picker"></div>
-        <label class="text-xs font-medium text-ink-muted">Ubah Teks</label>
-        <textarea id="edit-textarea" rows="8"
-          class="w-full rounded-card border bg-paper p-3 font-serif text-[17px] leading-[1.7] text-ink focus:border-accent focus:outline-hidden focus:ring-1 focus:ring-accent">${escapeHtml(entry.text || '')}</textarea>
-        <div class="flex items-center justify-end gap-2 pt-2">
-          <button type="button" id="btn-cancel-edit" class="rounded-field border bg-paper px-4 py-2 text-xs font-medium text-ink hover:bg-sand">
-            Batal
-          </button>
-          <button type="button" id="btn-save-edit" class="rounded-field bg-accent px-4 py-2 text-xs font-semibold text-cream hover:opacity-90">
-            Simpan Perubahan
-          </button>
+      <!-- Main Content Sheet -->
+      <div class="modern-card p-6 sm:p-7 flex flex-col gap-4">
+        <!-- Date & Mood Header -->
+        <div class="flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.08] pb-3">
+          <span class="text-xs font-semibold text-gray-500">${fullDateStr}</span>
+          <div class="flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200">
+            <span>${moodObj.icon}</span>
+            <span>${moodObj.fullLabel || moodObj.label}</span>
+          </div>
         </div>
-      </div>
 
-      <!-- Tag Chips -->
-      ${tags.length > 0 ? `
-        <div class="flex flex-wrap gap-2 pt-4 border-t">
-          ${tags.map((t) => `
-            <span class="inline-flex items-center rounded-full bg-sand px-3 py-1 text-xs font-medium text-ink">
-              ${escapeHtml(t)}
-            </span>
-          `).join('')}
+        <!-- View Mode: Journal Text -->
+        <div id="entry-content-view" class="text-[16px] leading-[1.75] text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-sans">
+          ${escapeHtml(entry.text || '')}
         </div>
-      ` : ''}
+
+        <!-- Edit Mode Form (Hidden by default) -->
+        <div id="entry-content-edit" class="hidden flex flex-col gap-3">
+          <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Ubah Suasana Hati</label>
+          <div id="edit-mood-picker"></div>
+
+          <label class="text-xs font-bold uppercase tracking-wider text-gray-400 mt-2">Ubah Teks</label>
+          <textarea id="edit-textarea" rows="7"
+            class="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 text-[15px] leading-[1.65] text-gray-900 dark:text-white focus:outline-hidden">${escapeHtml(entry.text || '')}</textarea>
+
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" id="btn-cancel-edit"
+              class="chip-pill-inactive rounded-full px-5 py-2.5 text-xs font-semibold">
+              Batal
+            </button>
+            <button type="button" id="btn-save-edit"
+              class="btn-obsidian rounded-full px-6 py-2.5 text-xs font-bold">
+              Simpan Perubahan
+            </button>
+          </div>
+        </div>
+
+        <!-- Tags Row -->
+        ${tags.length > 0 ? `
+          <div class="flex flex-wrap gap-1.5 pt-4 border-t border-black/[0.05] dark:border-white/[0.08]">
+            ${tags.map((t) => `
+              <span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-300">
+                ${escapeHtml(t)}
+              </span>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
     </div>
   `;
 
-  // Progressive image loading: fetch HD from Drive if fileId is present
+  // HD Image progressive loader
   if (entry.fileId) {
     const imgEl = document.getElementById('detail-image');
     const badgeEl = document.getElementById('image-hd-badge');
@@ -134,16 +142,10 @@ export async function renderDetailView(container, entryId) {
             if (badgeEl) badgeEl.textContent = 'HD';
           }
         })
-        .catch((err) => {
-          console.debug('Failed to fetch HD image:', err);
-          if (badgeEl) badgeEl.textContent = 'HD tersedia saat online';
-        });
-    } else if (badgeEl) {
-      badgeEl.textContent = 'HD tersedia saat online';
+        .catch(() => {});
     }
   }
 
-  // Edit / Delete button handlers
   const editBtn = document.getElementById('btn-edit-entry');
   const deleteBtn = document.getElementById('btn-delete-entry');
   const viewMode = document.getElementById('entry-content-view');
@@ -189,7 +191,7 @@ export async function renderDetailView(container, entryId) {
     await enqueue('update', { entry: updatedEntry });
     flushQueue();
 
-    showToast('Perubahan tersimpan', 'success');
+    showToast('Perubahan tersimpan!', 'success');
     renderDetailView(container, entryId);
   });
 
@@ -207,10 +209,9 @@ export async function renderDetailView(container, entryId) {
 }
 
 function escapeHtml(str) {
-  return str
+  return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/"/g, '&quot;');
 }

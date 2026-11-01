@@ -77,7 +77,7 @@ export function renderOnboardingModal(onComplete) {
 
         <div class="flex flex-col gap-1.5 text-left">
           <label class="text-xs font-semibold text-ink">Nama Panggilan / Username</label>
-          <input type="text" id="input-onboarding-username" placeholder="Nama Anda (misal: Alif)" value="Alif" maxlength="24"
+          <input type="text" id="input-onboarding-username" placeholder="Nama Anda (misal: Vanessa)" value="Vanessa" maxlength="24"
             class="rounded-field border bg-cream/40 p-2.5 text-xs text-ink focus:border-accent focus:outline-hidden" />
         </div>
 
