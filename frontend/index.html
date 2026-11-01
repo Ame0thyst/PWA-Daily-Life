@@ -16,6 +16,16 @@
 </head>
 <body class="font-sans text-[15px] antialiased selection:bg-black selection:text-white">
 
+  <!-- Atmospheric Lighting Elements (Fixed in Background Canvas) -->
+  <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
+    <!-- Top-right soft indigo aura -->
+    <div class="absolute -top-28 -right-28 size-96 rounded-full bg-indigo-500/[0.08] dark:bg-indigo-600/[0.12] blur-3xl"></div>
+    <!-- Mid-left soft emerald aura -->
+    <div class="absolute top-1/3 -left-28 size-80 rounded-full bg-emerald-500/[0.06] dark:bg-emerald-500/[0.10] blur-3xl"></div>
+    <!-- Bottom-right soft amber aura -->
+    <div class="absolute bottom-20 -right-20 size-80 rounded-full bg-amber-500/[0.06] dark:bg-amber-600/[0.08] blur-3xl"></div>
+  </div>
+
   <!-- 1. Opening / Splash Screen -->
   <div id="splash-screen" class="fixed inset-0 z-60 flex items-center justify-center bg-[#F4F5F8] dark:bg-[#0F1115] transition-all"></div>
 
@@ -23,37 +33,53 @@
   <div id="lock-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#F4F5F8] dark:bg-[#0F1115] hidden"></div>
 
   <!-- 3. Main App Container -->
-  <div id="app" class="hidden min-h-screen flex flex-col">
+  <div id="app" class="hidden min-h-screen flex flex-col relative">
 
-    <!-- Top Header Bar (Spacious & Streamlined on Mobile) -->
+    <!-- Top Header Bar with Accent Strip & Glassmorphism -->
     <header id="app-header"
-      class="sticky top-0 z-40 flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.08] bg-[#F4F5F8]/90 dark:bg-[#0F1115]/90 px-4 sm:px-8 py-2.5 sm:py-3.5 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+      class="sticky top-0 z-40 relative flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.08] bg-[#F4F5F8]/90 dark:bg-[#0F1115]/90 px-4 sm:px-8 py-2.5 sm:py-3.5 backdrop-blur-xl pt-[env(safe-area-inset-top)] shadow-2xs">
       
-      <!-- App Brand Logo (Icon on mobile, text on desktop) -->
-      <a href="#/write" class="flex items-center gap-2.5 group cursor-pointer" title="Daily Journal">
-        <div class="size-8.5 rounded-xl bg-[#181B20] text-white flex items-center justify-center font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
-          D
+      <!-- Top Subtle Decorative Accent Line -->
+      <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500/40 via-indigo-500/40 to-amber-500/40 opacity-80" aria-hidden="true"></div>
+
+      <!-- App Brand Logo (Icon & Text) -->
+      <a href="#/write" class="flex items-center gap-2.5 group cursor-pointer" title="Daily Journal — Beranda">
+        <div class="relative size-8.5 rounded-xl bg-[#181B20] text-white flex items-center justify-center font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
+          <span>D</span>
+          <span class="absolute -top-1 -right-1 size-2 rounded-full bg-amber-400"></span>
         </div>
-        <div class="hidden sm:flex flex-col">
+        <div class="flex flex-col">
           <span class="font-bold text-sm tracking-tight text-gray-900 dark:text-white leading-tight">Daily Journal</span>
-          <span class="text-[10px] text-gray-400 font-medium">Ruang Cerita Pribadi</span>
+          <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium leading-none">Ruang Cerita Pribadi</span>
         </div>
       </a>
 
-      <!-- Right Header Actions: Compact Glowing Pip, Theme, Profile Avatar -->
+      <!-- Center Live Date Pill (Visible on tablet & desktop) -->
+      <div id="header-date-badge" class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 dark:bg-[#171A21]/70 border border-black/[0.05] dark:border-white/[0.07] text-xs font-semibold text-gray-700 dark:text-gray-300 shadow-2xs">
+        <span>📅</span>
+        <span id="header-live-date">Hari ini</span>
+      </div>
+
+      <!-- Right Header Actions: Notification, Sync Pip, Theme, Profile Avatar -->
       <div class="flex items-center gap-2 sm:gap-2.5">
+        <!-- Inspiration / Notification Button -->
+        <button type="button" id="btn-header-notif" title="Inspirasi Menulis Hari Ini"
+          class="size-8 sm:size-8.5 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] dark:border-white/[0.08] shadow-2xs flex items-center justify-center text-xs hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-90 transition-all cursor-pointer">
+          🔔
+        </button>
+
         <!-- Minimal Glowing Sync Pip -->
         <div id="sync-pill-container"></div>
 
         <!-- Theme Toggle -->
-        <button type="button" id="btn-header-theme" title="Ganti Tema"
+        <button type="button" id="btn-header-theme" title="Ganti Tema (Terang / Gelap)"
           class="size-8 sm:size-8.5 rounded-full bg-white dark:bg-[#171A21] border border-black/[0.06] dark:border-white/[0.08] shadow-2xs flex items-center justify-center text-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-90 transition-all cursor-pointer">
           🎨
         </button>
 
-        <!-- User Profile Avatar (Compact Icon-Only on Mobile) -->
-        <button type="button" id="btn-header-profile" title="Profil Pengguna"
-          class="size-8 sm:size-8.5 rounded-full overflow-hidden border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#171A21] shadow-2xs flex items-center justify-center hover:opacity-90 active:scale-90 transition-all cursor-pointer">
+        <!-- User Profile Avatar Button -->
+        <button type="button" id="btn-header-profile" title="Profil & Kunci Diary"
+          class="relative size-8 sm:size-8.5 rounded-full overflow-hidden border border-black/[0.08] dark:border-white/[0.1] bg-white dark:bg-[#171A21] shadow-2xs flex items-center justify-center hover:opacity-90 active:scale-90 transition-all cursor-pointer">
           <div id="header-avatar-circle"
             class="size-full flex items-center justify-center font-bold text-xs text-gray-800 dark:text-white">
             V
@@ -62,48 +88,50 @@
       </div>
     </header>
 
-    <!-- Main Content Container with generous bottom spacing for sticky dock -->
+    <!-- Main Content Container with generous bottom spacing for floating dock -->
     <main id="main-content"
       class="mx-auto w-full max-w-2xl flex-1 px-4 sm:px-6 pt-4 pb-36 transition-all">
     </main>
-
-    <!-- FLOATING OBSIDIAN BOTTOM NAVIGATION DOCK (Always Sticky / Fixed) -->
-    <nav id="bottom-nav"
-      class="nav-dock-obsidian p-1.5 flex items-center justify-between">
-      
-      <!-- Tab 1: Write (Home/Tulis) -->
-      <a href="#/write" data-tab="write" title="Tulis Jurnal"
-        class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
-        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-        </svg>
-      </a>
-
-      <!-- Tab 2: Timeline (Schedule/Explore) -->
-      <a href="#/timeline" data-tab="timeline" title="Timeline"
-        class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
-        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-        </svg>
-      </a>
-
-      <!-- Tab 3: Analytics (Stats) -->
-      <a href="#/analytics" data-tab="analytics" title="Analitik"
-        class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
-        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-        </svg>
-      </a>
-
-      <!-- Tab 4: Settings (Grid icon matching screenshot) -->
-      <a href="#/settings" data-tab="settings" title="Pengaturan"
-        class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
-        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-        </svg>
-      </a>
-    </nav>
   </div>
+
+  <!-- 4. FLOATING OBSIDIAN BOTTOM NAVIGATION DOCK (Direct body child -> permanently fixed to screen viewport!) -->
+  <nav id="bottom-nav"
+    class="nav-dock-obsidian hidden p-1.5 flex items-center justify-between"
+    role="navigation"
+    aria-label="Navigasi Utama">
+    
+    <!-- Tab 1: Write (Home/Tulis) -->
+    <a href="#/write" data-tab="write" title="Tulis Jurnal"
+      class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
+      <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+      </svg>
+    </a>
+
+    <!-- Tab 2: Timeline (Schedule/Explore) -->
+    <a href="#/timeline" data-tab="timeline" title="Timeline Catatan"
+      class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
+      <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+      </svg>
+    </a>
+
+    <!-- Tab 3: Analytics (Stats & Wawasan) -->
+    <a href="#/analytics" data-tab="analytics" title="Statistik & Analitik"
+      class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
+      <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+      </svg>
+    </a>
+
+    <!-- Tab 4: Settings (Pengaturan) -->
+    <a href="#/settings" data-tab="settings" title="Pengaturan"
+      class="nav-tab nav-item-inactive size-11 rounded-full flex items-center justify-center cursor-pointer transition-all">
+      <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-13.5 18v-2.25z" />
+      </svg>
+    </a>
+  </nav>
 
   <!-- Toast Container -->
   <div id="toast-container"

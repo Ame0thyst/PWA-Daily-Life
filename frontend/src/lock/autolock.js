@@ -20,6 +20,7 @@ export function lockNow() {
   locked = true;
   document.getElementById('lock-screen')?.classList.remove('hidden');
   document.getElementById('app')?.classList.add('hidden');
+  document.getElementById('bottom-nav')?.classList.add('hidden');
   renderLockScreen();
 }
 
@@ -27,6 +28,7 @@ export function unlockApp() {
   locked = false;
   document.getElementById('lock-screen')?.classList.add('hidden');
   document.getElementById('app')?.classList.remove('hidden');
+  document.getElementById('bottom-nav')?.classList.remove('hidden');
   currentEnteredPin = '';
   if (lockoutTimer) {
     clearInterval(lockoutTimer);
@@ -52,6 +54,7 @@ export async function checkAndShowLock(onUnlocked) {
   unlockCallback = onUnlocked;
   document.getElementById('lock-screen')?.classList.remove('hidden');
   document.getElementById('app')?.classList.add('hidden');
+  document.getElementById('bottom-nav')?.classList.add('hidden');
   renderLockScreen();
 
   // Try biometric auto-prompt if available

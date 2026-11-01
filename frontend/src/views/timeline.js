@@ -14,10 +14,22 @@ let searchQuery = '';
 export async function renderTimelineView(container) {
   container.innerHTML = `
     <div class="flex flex-col gap-5 pb-32 max-w-xl mx-auto">
-      <!-- Top Title -->
-      <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Timeline Catatan</h2>
-        <span class="text-xs text-gray-500 font-medium" id="timeline-total-badge">Memuat...</span>
+      <!-- Top Title & Stats Banner -->
+      <div class="relative overflow-hidden rounded-3xl p-5 bg-white/80 dark:bg-[#171A21]/80 border border-black/[0.05] dark:border-white/[0.08] shadow-xs backdrop-blur-md">
+        <div class="absolute -right-8 -top-8 size-32 rounded-full bg-emerald-400/10 dark:bg-emerald-400/5 blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] text-gray-700 dark:text-gray-300">
+                📖 Arsip Pribadi
+              </span>
+            </div>
+            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mt-1">Timeline Cerita</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Jejak momen berharga yang telah terabadikan</p>
+          </div>
+          <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-white dark:bg-[#181B20] text-gray-800 dark:text-gray-200 border border-black/[0.06] dark:border-white/[0.08] shadow-2xs" id="timeline-total-badge">Memuat...</span>
+        </div>
       </div>
 
       <!-- Search Pill Bar -->

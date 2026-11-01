@@ -31,8 +31,21 @@ export async function renderSettingsView(container) {
 
   container.innerHTML = `
     <div class="flex flex-col gap-5 pb-32 max-w-xl mx-auto">
-      <div class="flex items-center justify-between pt-1">
-        <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Pengaturan</h2>
+      <!-- Top Title Banner -->
+      <div class="relative overflow-hidden rounded-3xl p-5 bg-white/80 dark:bg-[#171A21]/80 border border-black/[0.05] dark:border-white/[0.08] shadow-xs backdrop-blur-md">
+        <div class="absolute -right-8 -top-8 size-32 rounded-full bg-indigo-400/10 dark:bg-indigo-400/5 blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] text-gray-700 dark:text-gray-300">
+                ⚙️ Preferensi Sistem
+              </span>
+            </div>
+            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mt-1">Pengaturan & Keamanan</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Kelola sinkronisasi Google Sheets, PIN, dan cadangan data</p>
+          </div>
+        </div>
       </div>
 
       <!-- Profil Pengguna -->

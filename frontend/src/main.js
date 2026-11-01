@@ -222,10 +222,28 @@ function registerServiceWorker() {
   }
 }
 
+function updateHeaderDate() {
+  const el = document.getElementById('header-live-date');
+  if (!el) return;
+  const now = new Date();
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  el.textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+}
+
+const INSPIRATION_PROMPTS = [
+  'Apa satu hal kecil yang membuatmu tersenyum hari ini? ✨',
+  'Tuliskan hal terbaik atau pelajaran berharga yang kamu dapatkan hari ini. 📝',
+  'Bagaimana perasaanmu sekarang? Luapkan ceritamu dengan jujur. 💭',
+  'Catat satu kemenangan kecil yang kamu raih hari ini. 🏆',
+  'Semua catatan tersimpan rapi, privat, dan terenkripsi aman di perangkatmu. 🔒',
+];
+
 // App Initialization
 async function initApp() {
   await initTheme();
   initSyncPill();
+  updateHeaderDate();
   registerServiceWorker();
   await updateProfileUI();
 
@@ -236,9 +254,10 @@ async function initApp() {
   // Theme button
   document.getElementById('btn-header-theme')?.addEventListener('click', toggleTheme);
 
-  // Notification button
+  // Notification button with inspiration prompt
   document.getElementById('btn-header-notif')?.addEventListener('click', () => {
-    showToast('Semua catatan tersimpan rapi & terenkripsi lokal.', 'info');
+    const randomPrompt = INSPIRATION_PROMPTS[Math.floor(Math.random() * INSPIRATION_PROMPTS.length)];
+    showToast(randomPrompt, 'info');
   });
 
   // Listen for profile changes

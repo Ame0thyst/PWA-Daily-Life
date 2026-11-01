@@ -22,26 +22,56 @@ export async function renderWriteView(container) {
   const profile = await getUserProfile();
   const username = profile.username || 'Vanessa';
 
-  // Format date: e.g. "Minggu, 1 November"
+  // Format date & dynamic time-of-day greeting
   const now = new Date();
   const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
   const dateFormatted = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
 
+  const hour = now.getHours();
+  let timeGreeting = 'Selamat Pagi';
+  let timeIcon = '🌅';
+  if (hour >= 11 && hour < 15) {
+    timeGreeting = 'Selamat Siang';
+    timeIcon = '☀️';
+  } else if (hour >= 15 && hour < 18) {
+    timeGreeting = 'Selamat Sore';
+    timeIcon = '🌇';
+  } else if (hour >= 18 || hour < 4) {
+    timeGreeting = 'Selamat Malam';
+    timeIcon = '🌙';
+  }
+
   container.innerHTML = `
     <div class="flex flex-col gap-5 pb-32 max-w-xl mx-auto">
-      <!-- 1. Top Greeting & Date Pill Row -->
-      <div class="flex items-center justify-between pt-1">
-        <div class="flex flex-col">
-          <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-1.5">
-            <span>Halo, ${escapeHtml(username)}</span>
-            <span class="text-xl">👋</span>
-          </h2>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Bagaimana perjalanan harimu sejauh ini?</p>
-        </div>
+      <!-- 1. Top Greeting Card with Ambient Glow & Attributes -->
+      <div class="relative overflow-hidden rounded-3xl p-5 bg-white/80 dark:bg-[#171A21]/80 border border-black/[0.05] dark:border-white/[0.08] shadow-xs backdrop-blur-md">
+        <div class="absolute -right-8 -top-8 size-32 rounded-full bg-amber-400/10 dark:bg-amber-400/5 blur-2xl pointer-events-none"></div>
 
-        <div class="flex items-center gap-1.5 rounded-full bg-white dark:bg-[#171A21] px-3.5 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 border border-black/[0.05] shadow-2xs">
-          <span>📅</span> <span>${dateFormatted}</span>
+        <div class="relative z-10 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-col">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] text-gray-700 dark:text-gray-300">
+                ${timeIcon} ${timeGreeting}
+              </span>
+              <span class="text-[11px] text-gray-400 font-medium">Ruang Refleksi</span>
+            </div>
+            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mt-1.5 flex items-center gap-1.5">
+              <span>${escapeHtml(username)}</span>
+              <span class="text-xl">✨</span>
+            </h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Bagaimana alur ceritamu hari ini?</p>
+          </div>
+
+          <div class="flex flex-col items-end gap-1.5">
+            <div class="flex items-center gap-1.5 rounded-full bg-white dark:bg-[#181B20] px-3.5 py-1.5 text-xs font-semibold text-gray-800 dark:text-gray-200 border border-black/[0.06] dark:border-white/[0.08] shadow-2xs">
+              <span>📅</span> <span>${dateFormatted}</span>
+            </div>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+              <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Enkripsi Aktif
+            </span>
+          </div>
         </div>
       </div>
 

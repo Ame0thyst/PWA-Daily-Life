@@ -52,8 +52,12 @@
     user-select: none;
     -webkit-user-select: none;
     background-color: #F4F5F8;
+    background-image: radial-gradient(rgba(0, 0, 0, 0.045) 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
+    background-attachment: fixed;
     color: #11141A;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
   textarea, input, p, [contenteditable="true"] {
@@ -83,6 +87,9 @@
 
 [data-theme="dark"] body {
   background-color: #0F1115;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
   color: #F8FAFC;
 }
 
@@ -111,13 +118,14 @@
   transform: translateX(-50%) !important;
   width: 280px !important;
   max-width: calc(100vw - 32px) !important;
-  z-index: 999 !important;
-  background-color: #181B20;
-  border-radius: 9999px;
-  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.35), 0 8px 16px -4px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  z-index: 99999 !important;
+  background-color: #181B20 !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.45), 0 8px 16px -4px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  pointer-events: auto !important;
 }
 
 /* Active Nav Button */
@@ -273,8 +281,13 @@
   animation: liquid-fade-out 140ms ease-in forwards;
 }
 
+@keyframes app-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 #app:not(.hidden) {
-  animation: liquid-fade-in 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: app-fade-in 200ms ease-out forwards;
 }
 
 /* ========================================================

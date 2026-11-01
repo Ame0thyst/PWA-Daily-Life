@@ -21,25 +21,34 @@ let currentPeriodDays = 30; // 30, 90, 365
 export async function renderAnalyticsView(container) {
   container.innerHTML = `
     <div class="flex flex-col gap-5 pb-32 max-w-xl mx-auto">
-      <!-- Header with Time Filter -->
-      <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
-        <div>
-          <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Statistik & Wawasan</h2>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Pantau ritme refleksi, kebiasaan menulis, dan suasana hatimu.</p>
-        </div>
-        <div class="flex items-center gap-1.5" role="group">
-          <button type="button" data-period="30"
-            class="period-filter-btn chip-pill ${currentPeriodDays === 30 ? 'chip-pill-active' : 'chip-pill-inactive'}">
-            30 Hari
-          </button>
-          <button type="button" data-period="90"
-            class="period-filter-btn chip-pill ${currentPeriodDays === 90 ? 'chip-pill-active' : 'chip-pill-inactive'}">
-            90 Hari
-          </button>
-          <button type="button" data-period="365"
-            class="period-filter-btn chip-pill ${currentPeriodDays === 365 ? 'chip-pill-active' : 'chip-pill-inactive'}">
-            1 Tahun
-          </button>
+      <!-- Header with Time Filter & Ambient Banner -->
+      <div class="relative overflow-hidden rounded-3xl p-5 bg-white/80 dark:bg-[#171A21]/80 border border-black/[0.05] dark:border-white/[0.08] shadow-xs backdrop-blur-md">
+        <div class="absolute -right-8 -top-8 size-32 rounded-full bg-violet-400/10 dark:bg-violet-400/5 blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] text-gray-700 dark:text-gray-300">
+                📊 Analitik & Wawasan
+              </span>
+            </div>
+            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mt-1">Statistik Jurnal</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Pantau ritme refleksi, kebiasaan menulis, dan suasana hatimu.</p>
+          </div>
+          <div class="flex items-center gap-1.5" role="group">
+            <button type="button" data-period="30"
+              class="period-filter-btn chip-pill ${currentPeriodDays === 30 ? 'chip-pill-active' : 'chip-pill-inactive'}">
+              30 Hari
+            </button>
+            <button type="button" data-period="90"
+              class="period-filter-btn chip-pill ${currentPeriodDays === 90 ? 'chip-pill-active' : 'chip-pill-inactive'}">
+              90 Hari
+            </button>
+            <button type="button" data-period="365"
+              class="period-filter-btn chip-pill ${currentPeriodDays === 365 ? 'chip-pill-active' : 'chip-pill-inactive'}">
+              1 Tahun
+            </button>
+          </div>
         </div>
       </div>
 
