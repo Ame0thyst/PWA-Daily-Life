@@ -1,24 +1,25 @@
 /**
- * heatmap.js — 53-week x 7-day activity & mood heatmap (GitHub-style)
- * Uses explicit Tailwind utility classes: bg-heat-empty, bg-mood-1..5
+ * heatmap.js — 53-week x 7-day Activity & Mood Heatmap (GitHub-style)
+ * Always visible with explicit classes, contrast borders, stats, and auto-scroll to today
  */
 
-// Full class names required for Tailwind 4 scanner
-const HEAT_COLORS = [
-  'bg-heat-empty',
-  'bg-mood-1',
-  'bg-mood-2',
-  'bg-mood-3',
-  'bg-mood-4',
-  'bg-mood-5',
+const HEAT_LEVEL_CLASSES = [
+  'bg-slate-200/70 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700/80 hover:border-slate-500', // 0: empty
+  'bg-rose-500 border border-rose-600 shadow-2xs',                                                              // 1: sangat buruk
+  'bg-orange-400 border border-orange-500 shadow-2xs',                                                          // 2: kurang baik
+  'bg-amber-400 border border-amber-500 shadow-2xs',                                                            // 3: biasa saja
+  'bg-emerald-400 border border-emerald-500 shadow-2xs',                                                        // 4: baik
+  'bg-emerald-600 border border-emerald-700 shadow-2xs',                                                        // 5: sangat baik
 ];
 
 export function renderHeatmap(containerId, entries = [], onSelectDate = null) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  // Map entries by YYYY-MM-DD -> average mood
+  // Map entries by YYYY-MM-DD -> array of moods
   const dateMap = new Map();
+  let totalEntriesInYear = 0;
+
   entries.forEach((e) => {
     if (!e.timestamp) return;
     const dateStr = e.timestamp.substring(0, 10);
@@ -28,11 +29,10 @@ export function renderHeatmap(containerId, entries = [], onSelectDate = null) {
     dateMap.get(dateStr).push(e.mood);
   });
 
-  // Calculate 52-53 weeks ending on today
+  // Calculate 52 weeks ending on today
   const today = new Date();
   const dayOfWeek = today.getDay(); // 0 = Sun, 1 = Mon ...
-  // Normalize Monday as day 0
-  const adjustedTodayDay = (dayOfWeek + 6) % 7;
+  const adjustedTodayDay = (dayOfWeek + 6) % 7; // Mon = 0, Sun = 6
 
   const totalDays = 52 * 7 + (adjustedTodayDay + 1);
   const startDate = new Date(today);
@@ -41,6 +41,7 @@ export function renderHeatmap(containerId, entries = [], onSelectDate = null) {
   // Generate day cells
   const cells = [];
   const curr = new Date(startDate);
+  let activeDaysCount = 0;
 
   while (curr <= today) {
     const yyyy = curr.getFullYear();
@@ -50,62 +51,103 @@ export function renderHeatmap(containerId, entries = [], onSelectDate = null) {
 
     const moods = dateMap.get(dateStr);
     let level = 0;
-    let label = `${dd}/${mm}/${yyyy}: Belum ada jurnal`;
+    let label = `${dd}/${mm}/${yyyy}: Belum ada catatan`;
 
     if (moods && moods.length > 0) {
+      activeDaysCount += 1;
+      totalEntriesInYear += moods.length;
       const avg = Math.round(moods.reduce((a, b) => a + b, 0) / moods.length);
       level = Math.max(1, Math.min(5, avg));
-      const moodNames = ['', 'Sangat buruk', 'Kurang baik', 'Biasa saja', 'Baik', 'Sangat baik'];
-      label = `${dd}/${mm}/${yyyy}: ${moods.length} entri (Mood: ${moodNames[level]})`;
+      const moodNames = ['', 'Sangat Buruk 😞', 'Kurang Baik 🙁', 'Biasa Saja 😐', 'Baik 🙂', 'Sangat Baik 😄'];
+      label = `${dd}/${mm}/${yyyy}: ${moods.length} catatan (Mood: ${moodNames[level]})`;
     }
 
     cells.push({
       date: dateStr,
       level,
       label,
+      month: curr.getMonth(),
+      dayOfMonth: curr.getDate(),
+      dayOfWeek: (curr.getDay() + 6) % 7,
     });
 
     curr.setDate(curr.getDate() + 1);
   }
 
+  const activePercent = Math.round((activeDaysCount / Math.max(1, cells.length)) * 100);
+
   container.innerHTML = `
-    <div class="rounded-card border bg-paper p-4 shadow-card">
-      <div class="flex items-center justify-between pb-3 text-xs text-ink-muted">
-        <span class="font-medium text-ink">Aktivitas & Mood (1 Tahun)</span>
-        <div class="flex items-center gap-1.5 text-[11px]">
-          <span>Sedikit</span>
-          <span class="size-2.5 rounded-xs bg-heat-empty"></span>
-          <span class="size-2.5 rounded-xs bg-mood-1"></span>
-          <span class="size-2.5 rounded-xs bg-mood-3"></span>
-          <span class="size-2.5 rounded-xs bg-mood-5"></span>
-          <span>Banyak</span>
+    <div class="modern-card p-5 flex flex-col gap-3">
+      <!-- Heatmap Header -->
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="flex size-7 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-sm">🟩</span>
+          <div>
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white leading-tight">Aktivitas & Mood Harian</h3>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400">${activeDaysCount} hari aktif (${activePercent}%) • ${totalEntriesInYear} catatan dalam 1 tahun</p>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
+          <span>Kosong</span>
+          <span class="size-2.5 rounded-[3px] bg-slate-200/70 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700/80" title="Kosong"></span>
+          <span class="size-2.5 rounded-[3px] bg-rose-500" title="Sangat Buruk"></span>
+          <span class="size-2.5 rounded-[3px] bg-orange-400" title="Kurang Baik"></span>
+          <span class="size-2.5 rounded-[3px] bg-amber-400" title="Biasa Saja"></span>
+          <span class="size-2.5 rounded-[3px] bg-emerald-400" title="Baik"></span>
+          <span class="size-2.5 rounded-[3px] bg-emerald-600" title="Sangat Baik"></span>
+          <span>Hebat</span>
         </div>
       </div>
 
-      <div class="overflow-x-auto pb-2 pt-1">
-        <div class="grid grid-flow-col grid-rows-7 gap-[3px] w-max min-w-full">
+      <!-- Scrollable Grid of Squares -->
+      <div class="heatmap-scroll-area overflow-x-auto pb-2 pt-1 no-scrollbar select-none">
+        <div class="grid grid-flow-col grid-rows-7 gap-[3.5px] w-max min-w-full">
           ${cells.map(
             (c) => `
             <button type="button" data-date="${c.date}" aria-label="${c.label}" title="${c.label}"
-              class="heatmap-cell size-3 rounded-xs ${HEAT_COLORS[c.level]} transition-transform hover:scale-125 hover:z-10 focus-visible:outline-1 focus-visible:outline-accent"></button>
+              class="heatmap-cell size-3.5 rounded-[3.5px] ${HEAT_LEVEL_CLASSES[c.level]} transition-transform hover:scale-135 hover:z-10 focus:outline-none cursor-pointer"></button>
           `
           ).join('')}
         </div>
       </div>
-      <div class="mt-1 flex justify-between text-[10px] text-ink-muted">
-        <span>Sen</span>
-        <span>Rab</span>
-        <span>Jum</span>
-        <span>Min</span>
+
+      <!-- Heatmap Footer with Day Labels & Hint -->
+      <div class="flex items-center justify-between text-[11px] text-gray-400 font-medium px-1 pt-0.5 border-t border-black/5 dark:border-white/5">
+        <div class="flex items-center gap-3">
+          <span>Sen</span>
+          <span>Rab</span>
+          <span>Jum</span>
+          <span>Min</span>
+        </div>
+        <div id="heatmap-info-pill" class="text-[11px] text-gray-500 dark:text-gray-400 italic truncate max-w-[200px]">
+          Ketuk kotak untuk melihat detail
+        </div>
       </div>
     </div>
   `;
 
-  if (onSelectDate) {
-    container.querySelectorAll('.heatmap-cell').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        onSelectDate(btn.dataset.date);
-      });
+  // Auto-scroll to today (right side)
+  requestAnimationFrame(() => {
+    const scrollArea = container.querySelector('.heatmap-scroll-area');
+    if (scrollArea) {
+      scrollArea.scrollLeft = scrollArea.scrollWidth;
+    }
+  });
+
+  // Tap handler to update info pill or navigate
+  const infoPill = container.querySelector('#heatmap-info-pill');
+  container.querySelectorAll('.heatmap-cell').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const dateStr = btn.dataset.date;
+      const label = btn.getAttribute('title');
+      if (infoPill) {
+        infoPill.innerHTML = `<span class="text-gray-900 dark:text-white font-semibold not-italic">${label}</span>`;
+      }
+      if (onSelectDate) {
+        onSelectDate(dateStr);
+      }
     });
-  }
+  });
 }
